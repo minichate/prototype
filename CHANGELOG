@@ -1,3 +1,5 @@
+* Fix several issues with String#escapeHTML and String#unescapeHTML in IE and Safari. Closes #8452. [jddalton, slusarz]
+
 * In IE, enforce first-in-first-out event order.
   Ensure all dom:loaded observers are executed before executing window "onload" observers.
   Stop window "onresize" from firing multiple times for one resize action. Closes #9394. [samleb, jddalton]
