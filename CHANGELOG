@@ -1,3 +1,5 @@
+* Set document.loaded = true before calling document.fire('dom:loaded'). Closes #11453. [choppsta, jddalton]
+
 * Fix String#extractScripts from returning commented-out scripts. Closes #9599. [bubbatls, jddalton]
 
 * Fix Prototype#scriptFragment for compatibility with Safari and scripts containing non-ASCII characters. Closes #9663. [Alexey Proskuryakov, jddalton]
