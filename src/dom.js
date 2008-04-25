@@ -494,6 +494,7 @@ Element.Methods = {
   },
 
   cumulativeOffset: function(element) {
+    element = $(element);
     var valueT = 0, valueL = 0;
     do {
       valueT += element.offsetTop  || 0;
@@ -504,6 +505,7 @@ Element.Methods = {
   },
 
   positionedOffset: function(element) {
+    element = $(element);
     var valueT = 0, valueL = 0;
     do {
       valueT += element.offsetTop  || 0;
@@ -559,6 +561,7 @@ Element.Methods = {
   },
 
   cumulativeScrollOffset: function(element) {
+    element = $(element);
     var valueT = 0, valueL = 0;
     do {
       valueT += element.scrollTop  || 0;
@@ -569,6 +572,7 @@ Element.Methods = {
   },
   
   getOffsetParent: function(element) {
+  	element = $(element);
     if (element.offsetParent) return $(element.offsetParent);
     if (element == document.body) return $(element);
     
@@ -580,9 +584,9 @@ Element.Methods = {
   },
 
   viewportOffset: function(forElement) {
-    var valueT = 0, valueL = 0;
+    forElement = $(forElement);
 
-    var element = forElement;
+    var element = forElement, valueT = 0, valueL = 0;
     do {
       valueT += element.offsetTop  || 0;
       valueL += element.offsetLeft || 0;
@@ -605,6 +609,7 @@ Element.Methods = {
   },
 
   clonePosition: function(element, source) {
+    element = $(element);
     var options = Object.extend({
       setLeft:    true,
       setTop:     true,
@@ -619,7 +624,6 @@ Element.Methods = {
     var p = source.viewportOffset();
 
     // find coordinate system to use
-    element = $(element);
     var delta = [0, 0];
     var parent = null;
     // delta [0,0] will do fine with position: fixed elements, 
@@ -698,7 +702,7 @@ if (Prototype.Browser.Opera) {
   
   Element.Methods.readAttribute = Element.Methods.readAttribute.wrap(
     function(proceed, element, attribute) {
-      if (attribute === 'title') return element.title;
+      if (attribute === 'title') return $(element).title;
       return proceed(element, attribute);
     }
   );  
@@ -745,7 +749,7 @@ else if (Prototype.Browser.IE) {
   
   Element.Methods.cumulativeOffset = Element.Methods.cumulativeOffset.wrap(
     function(proceed, element) {
-      try { element.offsetParent }
+      try { $(element).offsetParent }
       catch(e) { return Element._returnOffset(0,0) }
       return proceed(element);
     }
@@ -919,6 +923,7 @@ else if (Prototype.Browser.WebKit) {
   // positioned.  For performance reasons, redefine Element#cumulativeOffset for
   // KHTML/WebKit only.
   Element.Methods.cumulativeOffset = function(element) {
+    element = $(element);
     var valueT = 0, valueL = 0;
     do {
       valueT += element.offsetTop  || 0;
@@ -1090,7 +1095,7 @@ Element.extend = (function() {
 })();
 
 Element.hasAttribute = function(element, attribute) {
-  if (element.hasAttribute) return element.hasAttribute(attribute);
+  if ((element = $(element)).hasAttribute) return element.hasAttribute(attribute);
   return Element.Methods.Simulated.hasAttribute(element, attribute);
 };
 
