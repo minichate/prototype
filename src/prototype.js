@@ -38,4 +38,9 @@ if (Prototype.Browser.MobileSafari)
 
 <%= include 'ajax.js', 'dom.js', 'selector.js', 'form.js', 'event.js', 'deprecated.js' %>
 
+// Prevent memory leak in IE
+Event.observe(window, 'unload', function() {
+   String.prototype.escapeHTML.container = String.prototype.escapeHTML.text = null;
+});
+
 Element.addMethods();
