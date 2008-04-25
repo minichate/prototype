@@ -1,3 +1,5 @@
+* Fix Element#getOffsetParent and Element#viewportOffset IE style null error. Closes #11473. [jddalton]
+
 * Extend element argument in Element position methods. Closes #11472. [jddalton]
 
 * Amended failing Element#identify test.
