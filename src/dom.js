@@ -573,14 +573,18 @@ Element.Methods = {
   
   getOffsetParent: function(element) {
   	element = $(element);
-    if (element.offsetParent) return $(element.offsetParent);
-    if (element == document.body) return $(element);
+    var op = element.offsetParent, body = document.body, docElement = document.documentElement;  
+
+    /* IE with strict doctype may try to return documentElement as offsetParent  
+       on relatively positioned elements, we will return body instead */  
+    if (op && op !== docElement) return $(op);  
+    if (op === docElement || element === docElement || element === body) return $(body);  
     
-    while ((element = element.parentNode) && element != document.body)
+    while ((element = element.parentNode) && element !== body)  
       if (Element.getStyle(element, 'position') != 'static')
         return $(element);
 
-    return $(document.body);
+    return $(body);
   },
 
   viewportOffset: function(forElement) {
@@ -590,12 +594,7 @@ Element.Methods = {
     do {
       valueT += element.offsetTop  || 0;
       valueL += element.offsetLeft || 0;
-
-      // Safari fix
-      if (element.offsetParent == document.body &&
-        Element.getStyle(element, 'position') == 'absolute') break;
-
-    } while (element = element.offsetParent);
+    } while ((element = element.getOffsetParent()) != document.body);
 
     element = forElement;
     do {
