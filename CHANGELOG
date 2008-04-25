@@ -1,3 +1,7 @@
+* In IE, enforce first-in-first-out event order.
+  Ensure all dom:loaded observers are executed before executing window "onload" observers.
+  Stop window "onresize" from firing multiple times for one resize action. Closes #9394. [samleb, jddalton]
+
 * Set document.loaded = true before calling document.fire('dom:loaded'). Closes #11453. [choppsta, jddalton]
 
 * Fix String#extractScripts from returning commented-out scripts. Closes #9599. [bubbatls, jddalton]
