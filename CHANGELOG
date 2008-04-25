@@ -1,3 +1,5 @@
+* Fix Prototype#scriptFragment for compatibility with Safari and scripts containing non-ASCII characters. Closes #9663. [Alexey Proskuryakov, jddalton]
+
 * Fix Element#getOffsetParent and Element#viewportOffset IE style null error. Closes #11473. [jddalton]
 
 * Extend element argument in Element position methods. Closes #11472. [jddalton]
