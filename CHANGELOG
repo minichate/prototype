@@ -1,3 +1,5 @@
+* Extend element argument in Element position methods. Closes #11472. [jddalton]
+
 * Amended failing Element#identify test.
 
 * Fix error when calling Event.stopObserving(window). (jddalton) [#30 state:resolved]
