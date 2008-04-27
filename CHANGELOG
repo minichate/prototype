@@ -1,3 +1,5 @@
+* Performance improvement for IE in Element#_getContentFromAnonymouseElement. Closes #11468. [jddalton]
+
 * Fix IE issue with creating a new button element and setting it's "type" attribute. Closes #10548. [jddalton, sakarit]
 
 * Fix for IE7 to access local files via Ajax.Request. Closes #8259. [hagen.seifert, jddalton]
