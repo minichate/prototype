@@ -1,3 +1,5 @@
+* Make String#escapeHTML escape double quotes. Closes #10622. [kangax]
+
 * Performance improvement for IE in Element#_getContentFromAnonymouseElement. Closes #11468. [jddalton]
 
 * Fix IE issue with creating a new button element and setting it's "type" attribute. Closes #10548. [jddalton, sakarit]
