@@ -1,3 +1,5 @@
+* Fix for IE7 to access local files via Ajax.Request. Closes #8259. [hagen.seifert, jddalton]
+
 * Only allow Ajax status 0 for requests originating from file/ftp protocols. Closes #10030. [jddalton, tbeck]
 
 * Fix several issues with String#escapeHTML and String#unescapeHTML in IE and Safari. Closes #8452. [jddalton, slusarz]
