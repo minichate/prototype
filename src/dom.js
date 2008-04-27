@@ -140,10 +140,8 @@ Element.Methods = {
       tagName = ((position == 'before' || position == 'after')
         ? element.parentNode : element).tagName.toUpperCase();
       
-      childNodes = Element._getContentFromAnonymousElement(tagName, content.stripScripts());
-      
-      if (position == 'top' || position == 'after') childNodes.reverse();
-      childNodes.each(insert.curry(element));
+      fragment = Element._getContentFromAnonymousElement(tagName, content.stripScripts());
+ 	  insert(element, fragment);
       
       content.evalScripts.bind(content).defer();
     }
@@ -948,14 +946,13 @@ if (Prototype.Browser.IE || Prototype.Browser.Opera) {
     if (Object.isElement(content)) return element.update().insert(content);
     
     content = Object.toHTML(content);
-    var tagName = element.tagName.toUpperCase();
+    var tagName = element.tagName.toUpperCase(), stripped = content.stripScripts();
     
     if (tagName in Element._insertionTranslations.tags) {
       $A(element.childNodes).each(function(node) { element.removeChild(node) });
-      Element._getContentFromAnonymousElement(tagName, content.stripScripts())
-        .each(function(node) { element.appendChild(node) });
+      element.appendChild(Element._getContentFromAnonymousElement(tagName, stripped));
     }
-    else element.innerHTML = content.stripScripts();
+    else element.innerHTML = stripped;
     
     content.evalScripts.bind(content).defer();
     return element;
@@ -973,18 +970,13 @@ if ('outerHTML' in document.createElement('div')) {
     }
 
     content = Object.toHTML(content);
-    var parent = element.parentNode, tagName = parent.tagName.toUpperCase();
+    var parent = element.parentNode, tagName = parent.tagName.toUpperCase(), stripped = content.stripScripts();
     
     if (Element._insertionTranslations.tags[tagName]) {
-      var nextSibling = element.next();
-      var fragments = Element._getContentFromAnonymousElement(tagName, content.stripScripts());
-      parent.removeChild(element);
-      if (nextSibling)
-        fragments.each(function(node) { parent.insertBefore(node, nextSibling) });
-      else 
-        fragments.each(function(node) { parent.appendChild(node) });
+      var nextSibling = element.next(), fragment = Element._getContentFromAnonymousElement(tagName, stripped);
+      parent.replaceChild(fragment, element);
     }
-    else element.outerHTML = content.stripScripts();
+    else element.outerHTML = stripped;
     
     content.evalScripts.bind(content).defer();
     return element;
@@ -998,14 +990,26 @@ Element._returnOffset = function(l, t) {
   return result;
 };
 
-Element._getContentFromAnonymousElement = function(tagName, html) {
-  var div = new Element('div'), t = Element._insertionTranslations.tags[tagName];
-  if (t) {
-    div.innerHTML = t[0] + html + t[1];
-    t[2].times(function() { div = div.firstChild });
-  } else div.innerHTML = html;
-  return $A(div.childNodes);
-};
+Element._getContentFromAnonymousElement = (function() { 
+  var div = document.createElement('div'), fragment = document.createDocumentFragment();
+  
+  return function(tagName, html) {
+  
+    var node = div, t = Element._insertionTranslations.tags[tagName];
+    if (t) {
+      node.innerHTML= t[0] + html + t[1];
+      t[2].times(function() { node = node.firstChild });
+    } else node.innerHTML = html;
+    
+    if (node.removeNode) {
+      fragment.appendChild(node).removeNode();
+    } else {
+      var i = node.childNodes.length;
+      while(i) fragment.insertBefore(node.childNodes[--i], fragment.firstChild);
+    }
+    return fragment;
+  }
+})();
 
 Element._insertionTranslations = {
   before: function(element, node) {
