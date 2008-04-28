@@ -952,7 +952,10 @@ if (Prototype.Browser.IE || Prototype.Browser.Opera) {
       $A(element.childNodes).each(function(node) { element.removeChild(node) });
       element.appendChild(Element._getContentFromAnonymousElement(tagName, stripped));
     }
-    else element.innerHTML = stripped;
+    else {
+      element.innerHTML = stripped;
+      Element._fixAnchorsAfterUpdate(element, stripped);
+    }
     
     content.evalScripts.bind(content).defer();
     return element;
@@ -972,7 +975,7 @@ if ('outerHTML' in document.createElement('div')) {
     content = Object.toHTML(content);
     var parent = element.parentNode, tagName = parent.tagName.toUpperCase(), stripped = content.stripScripts();
     
-    if (Element._insertionTranslations.tags[tagName]) {
+    if (Element._insertionTranslations.tags[tagName] || /<a[^>]+\/?>/i.test(stripped)) {
       var nextSibling = element.next(), fragment = Element._getContentFromAnonymousElement(tagName, stripped);
       parent.replaceChild(fragment, element);
     }
@@ -998,8 +1001,12 @@ Element._getContentFromAnonymousElement = (function() {
     var node = div, t = Element._insertionTranslations.tags[tagName];
     if (t) {
       node.innerHTML= t[0] + html + t[1];
+      Element._fixAnchorsAfterUpdate(node, html); 
       t[2].times(function() { node = node.firstChild });
-    } else node.innerHTML = html;
+    } else {
+      node.innerHTML = html;
+      Element._fixAnchorsAfterUpdate(node, html);
+    }
     
     if (node.removeNode) {
       fragment.appendChild(node).removeNode();
@@ -1010,6 +1017,21 @@ Element._getContentFromAnonymousElement = (function() {
     return fragment;
   }
 })();
+
+// Fix IE innerHTML issue with links and relative hrefs 
+Element._fixAnchorsAfterUpdate = Prototype.K;
+if (Prototype.Browser.IE) {
+  (Element._fixAnchorsAfterUpdate = function(element, html) {
+    var anchors = element.getElementsByTagName('A'),
+    popDoc = arguments.callee.popup.document, popAnchors, i;
+    if (i = anchors.length) {
+      popDoc.open().write(html);
+      popDoc.close();
+      popAnchors = popDoc.getElementsByTagName('A');
+      while (i) anchors[--i].href = popAnchors[i].getAttribute('href', 2);
+    }
+  }).popup = window.createPopup();
+}
 
 Element._insertionTranslations = {
   before: function(element, node) {
