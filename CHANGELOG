@@ -1,3 +1,5 @@
+* Make sure Event#stopObserving works when passed non-string value as an eventName (e.g. when using "each(Event.stopObserving)") [kangax]
+
 * Allow versions of WebKit that support DOMContentLoaded event to use it instead of setInterval(). Closes LH#64. [LaC]
 
 * Stop IE from erroring when calling Event#stopObserving on an element with no observers. [jddalton]
