@@ -1,3 +1,5 @@
+* Fix Event#element accessing inexistent tagName property (e.g. when element is a document). [kangax]
+
 * Make Object.isNumber(new Number(n)) and Object.isString(new String(s)) return true. Closes #10595. [foca, kangax]
 
 * Stop Form.Element.Methods.disable() from bluring focused element. Closes #11214. [kangax, sjoekie]
