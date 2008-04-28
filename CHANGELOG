@@ -1,3 +1,5 @@
+* Fix IE issue where Element#update(), Element#insert(), or Element#replace would turn relative href's into absolute. Closes #11350. [elvanor, jddalton, kangax]
+
 * Make String#escapeHTML escape double quotes. Closes #10622. [kangax]
 
 * Performance improvement for IE in Element#_getContentFromAnonymouseElement. Closes #11468. [jddalton]
