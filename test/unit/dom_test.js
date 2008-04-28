@@ -371,8 +371,9 @@ new Test.Unit.Runner({
   },
   
   testElementReplace: function() {
-    $('testdiv-replace-1').replace('hello from div!');
+    var replace1 = $('testdiv-replace-1').replace('hello from div!');
     this.assertEqual('hello from div!', $('testdiv-replace-container-1').innerHTML);
+    this.assertEqual('original text', replace1.innerHTML);
     
     $('testdiv-replace-2').replace(123);
     this.assertEqual('123', $('testdiv-replace-container-2').innerHTML);
