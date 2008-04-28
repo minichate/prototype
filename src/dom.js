@@ -975,7 +975,8 @@ if ('outerHTML' in document.createElement('div')) {
     content = Object.toHTML(content);
     var parent = element.parentNode, tagName = parent.tagName.toUpperCase(), stripped = content.stripScripts();
     
-    if (Element._insertionTranslations.tags[tagName] || /<a[^>]+\/?>/i.test(stripped)) {
+    /* Avoid outerHTML for IE because it incorrectly removes the replaced elements childNodes */
+    if (Element._insertionTranslations.tags[tagName] || Prototype.Browser.IE) {
       var nextSibling = element.next(), fragment = Element._getContentFromAnonymousElement(tagName, stripped);
       parent.replaceChild(fragment, element);
     }
