@@ -213,8 +213,9 @@ new Test.Unit.Runner({
   },
   
   testObjectIsString: function() {
-    this.assert(!Object.isString(function() { }));
     this.assert(Object.isString("a string"));
+    this.assert(Object.isString(new String("a string")));
+    this.assert(!Object.isString(function() { }));
     this.assert(!Object.isString(0));
     this.assert(!Object.isString([]));
     this.assert(!Object.isString({}));
@@ -225,6 +226,7 @@ new Test.Unit.Runner({
   testObjectIsNumber: function() {
     this.assert(Object.isNumber(0));
     this.assert(Object.isNumber(1.0));
+    this.assert(Object.isNumber(new Number(0)));
     this.assert(!Object.isNumber(function() { }));
     this.assert(!Object.isNumber("a string"));
     this.assert(!Object.isNumber([]));
