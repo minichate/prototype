@@ -145,11 +145,11 @@ Object.extend(Object, {
   },
   
   isString: function(object) {
-    return typeof object == "string";
+    return object != null && object.constructor == String;
   },
   
   isNumber: function(object) {
-    return typeof object == "number";
+    return object != null && object.constructor == Number;
   },
   
   isUndefined: function(object) {
