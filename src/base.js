@@ -27,6 +27,7 @@ var Class = {
       klass.prototype.initialize = Prototype.emptyFunction;
     
     klass.prototype.constructor = klass;
+    klass.toString = klass.prototype.initialize.toString.bind()
     
     return klass;
   }
@@ -41,20 +42,25 @@ Class.Methods = {
       properties.push("toString", "valueOf");
     
     for (var i = 0, length = properties.length; i < length; i++) {
-      var property = properties[i], value = source[property];
-      if (ancestor && Object.isFunction(value) &&
-          value.argumentNames().first() == "$super") {
-        var method = value, value = Object.extend((function(m) { 
-          return function() { return ancestor[m].apply(this, arguments) };
-        })(property).wrap(method), {
-          valueOf:  function() { return method },
-          toString: function() { return method.toString() }  
-        });
-      }
-      this.prototype[property] = value;
+      this.addMethod(properties[i], source[properties[i]], ancestor);
     }
-    
     return this;
+  },
+  
+  addMethod: function(property, value, ancestor) {
+    if (Object.isFunction(value)) {
+      var original = value;
+      var method = function() { return original.apply(this, arguments) };
+
+      if (ancestor && value.argumentNames()[0] == "$super") {
+        value = function() { return ancestor[property].apply(this, arguments) }.wrap(method);
+      }
+      else value = method;
+
+      value.toString = original.toString.bind(original);
+      value.valueOf = original.valueOf.bind(original);
+    }
+    this.prototype[property] = value;
   }
 };
 
