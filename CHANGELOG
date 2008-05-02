@@ -1,3 +1,5 @@
+* Preserve inline display style when using Element#show and Element#hide. Closes #3868 [anonymous, Tobie Langel]
+
 * Ensure Element#hide and Element#show return element. [jddalton]
 
 * Fix IE issue where Element#readAttribute() would return the form's child element if the element had the same id/name as the attribute. Closes #11092. [jddalton]
