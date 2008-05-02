@@ -1,3 +1,5 @@
+* Fix Array#inersect not returning correct result if intersected value is 0. [jddalton]
+
 * Make Form.Element.getValue/setValue return null for unknown/unsupported elements. Closes #8381 [jddalton, tdd]
 
 * Optimize by using "_each" instead of "each" where applicable. Closes #9092 [sylvainzimmer]
