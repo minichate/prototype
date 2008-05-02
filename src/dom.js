@@ -172,7 +172,7 @@ Element.Methods = {
   inspect: function(element) {
     element = $(element);
     var result = '<' + element.tagName.toLowerCase();
-    $H({'id': 'id', 'className': 'class'}).each(function(pair) {
+    $H({'id': 'id', 'className': 'class'})._each(function(pair) {
       var property = pair.first(), attribute = pair.last();
       var value = (element[property] || '').toString();
       if (value) result += ' ' + attribute + '=' + value.inspect(true);
@@ -1162,7 +1162,7 @@ Element.addMethods = function(methods) {
   
   if (!tagName) Object.extend(Element.Methods, methods || { });  
   else {
-    if (Object.isArray(tagName)) tagName.each(extend);
+    if (Object.isArray(tagName)) tagName._each(extend);
     else extend(tagName);
   }
   

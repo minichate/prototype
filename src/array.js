@@ -98,7 +98,7 @@ Object.extend(Array.prototype, {
   
   toJSON: function() {
     var results = [];
-    this.each(function(object) {
+    this._each(function(object) {
       var value = Object.toJSON(object);
       if (!Object.isUndefined(value)) results.push(value);
     });
