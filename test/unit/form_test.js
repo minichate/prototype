@@ -326,7 +326,15 @@ new Test.Unit.Runner({
     }, this);
   },
 
+  testGetValue: function() {
+    this.assertEqual(null, Form.Element.getValue('someBorkedId')); // Unknown
+ 	this.assertEqual(null, Form.Element.getValue('form')); // Unsupported
+  },
+  
   testSetValue: function(){
+    // unkown element
+    this.assertEqual(null, Form.Element.setValue('someBorkedId', 'blah')); // Unknown
+    
     // text input
     var input = $('input_enabled'), oldValue = input.getValue();
     this.assertEqual(input, input.setValue('foo'), 'setValue chaining is broken');
@@ -340,12 +348,14 @@ new Test.Unit.Runner({
     this.assertEqual(null, input.getValue(), 'checkbox should be unchecked');
     input.setValue(true);
     this.assertEqual("1", input.getValue(), 'checkbox should be checked');
+    
     // selectbox
     input = $('bigform')['vu'];
     input.setValue('3');
     this.assertEqual('3', input.getValue(), 'single select option improperly set');
     input.setValue('1');
     this.assertEqual('1', input.getValue());
+    
     // multiple select
     input = $('bigform')['vm[]'];
     input.setValue(['2', '3']);
