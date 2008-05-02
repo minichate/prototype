@@ -1,3 +1,5 @@
+* Make Form.Element.getValue/setValue return null for unknown/unsupported elements. Closes #8381 [jddalton, tdd]
+
 * Optimize by using "_each" instead of "each" where applicable. Closes #9092 [sylvainzimmer]
 
 * Preserve inline display style when using Element#show and Element#hide. Closes #3868 [anonymous, Tobie Langel]
