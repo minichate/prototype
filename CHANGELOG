@@ -1,3 +1,5 @@
+* Remove Array#reduce to avoid conflicts with Firefox 3's native implementation. [sam]
+
 * Class constructors should return the "initialize" method's return value. Closes #11481 [cch1]
 
 * Class#addMethods reworked to include late mixin binding, augmented constructor toString,
