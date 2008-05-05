@@ -1,3 +1,6 @@
+* Class#addMethods reworked to include late mixin binding, augmented constructor toString,
+  correct IE toString/valueOf assignments, and separated complex logic into Class#addMethod. [kangax, Tobie Langel]
+
 * Ensure event.target is extended in IE. [jddalton]
 
 * Fix Array#inersect not returning correct result if intersected value is 0. [jddalton]
