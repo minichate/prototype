@@ -124,13 +124,13 @@ Event.extend = (function() {
       if (!event) return false;
       if (event._extendedByPrototype) return event;
       
-      event._extendedByPrototype = Prototype.emptyFunction;
       var pointer = Event.pointer(event);
       Object.extend(event, {
-        target: Element.extend(event.srcElement),
+        _extendedByPrototype: Prototype.emptyFunction,
+        target:        Element.extend(event.srcElement),
         relatedTarget: Event.relatedTarget(event),
-        pageX:  pointer.x,
-        pageY:  pointer.y
+        pageX:         pointer.x,
+        pageY:         pointer.y
       });
       return Object.extend(event, methods);
     };
