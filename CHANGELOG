@@ -1,3 +1,5 @@
+* Ensure event.target is extended in IE. [jddalton]
+
 * Fix Array#inersect not returning correct result if intersected value is 0. [jddalton]
 
 * Make Form.Element.getValue/setValue return null for unknown/unsupported elements. Closes #8381 [jddalton, tdd]
