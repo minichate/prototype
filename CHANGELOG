@@ -1,3 +1,5 @@
+* Element#down on an input element should not raise error. Closes #11102 [humeniuc, kangax]
+
 * Form#serializeElements should not serialize file inputs. Closes #10118 [kangax, Lonesome Boy]
 
 * Remove Array#reduce to avoid conflicts with Firefox 3's native implementation. [sam]
