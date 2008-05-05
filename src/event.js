@@ -127,7 +127,7 @@ Event.extend = (function() {
       event._extendedByPrototype = Prototype.emptyFunction;
       var pointer = Event.pointer(event);
       Object.extend(event, {
-        target: event.srcElement,
+        target: Element.extend(event.srcElement),
         relatedTarget: Event.relatedTarget(event),
         pageX:  pointer.x,
         pageY:  pointer.y
