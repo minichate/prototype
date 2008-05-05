@@ -1,3 +1,5 @@
+* Class constructors should return the "initialize" method's return value. Closes #11481 [cch1]
+
 * Class#addMethods reworked to include late mixin binding, augmented constructor toString,
   correct IE toString/valueOf assignments, and separated complex logic into Class#addMethod. [kangax, Tobie Langel]
 
