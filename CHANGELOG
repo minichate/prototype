@@ -1,3 +1,5 @@
+* Fix Element#absolutize calculating dimensions incorrectly in IE7. Closes #9918. [kangax, pphilipp]
+
 * Fix Element#writeAttribute('encType', 'multipart/form-data') on dynamically created form elements in IE. Closes #11126. [jddalton, kangax, NoiseEee]
 
 * Element#down on an input element should not raise error. Closes #11102. [humeniuc, kangax]
