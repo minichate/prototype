@@ -1,3 +1,13 @@
+* Fix an issue where Element#getHeight returns null if the height is set to "auto." (kangax, ylucas, jddalton)
+
+* Make Element#absolutize use Element#getDimensions to prevent certain failures in IE. (kangax, pphilipp, jddalton)
+
+* Fix Element#writeAttribute('encType', 'multipart/form-data') on dynamically created form elements in IE. (jddalton, kangax, NoiseEee)
+
+* Element#down on an input element should not raise error. (humeniuc, kangax)
+
+* Form#serializeElements should not serialize file inputs. (kangax, Lonesome Boy)
+
 * For consistency, add additional optional parameter "context" to Number.prototype.times. (samleb)
 
 * Make Element#getStyle calculate height/width when they are set to "auto". Closes #10116. [kangax, ylucas]
