@@ -1,3 +1,5 @@
+* For consistency, add additional optional parameter "context" to Number.prototype.times. (samleb)
+
 * Make Element#getStyle calculate height/width when they are set to "auto". Closes #10116. [kangax, ylucas]
 
 * Fix Element#absolutize calculating dimensions incorrectly in IE7. Closes #9918. [kangax, pphilipp]
