@@ -1,12 +1,12 @@
 * Fix Element#writeAttribute('encType', 'multipart/form-data') on dynamically created form elements in IE. Closes #11126. [jddalton, kangax, NoiseEee]
 
-* Element#down on an input element should not raise error. Closes #11102 [humeniuc, kangax]
+* Element#down on an input element should not raise error. Closes #11102. [humeniuc, kangax]
 
-* Form#serializeElements should not serialize file inputs. Closes #10118 [kangax, Lonesome Boy]
+* Form#serializeElements should not serialize file inputs. Closes #10118. [kangax, Lonesome Boy]
 
 * Remove Array#reduce to avoid conflicts with Firefox 3's native implementation. [sam]
 
-* Class constructors should return the "initialize" method's return value. Closes #11481 [cch1]
+* Class constructors should return the "initialize" method's return value. Closes #11481. [cch1]
 
 * Class#addMethods reworked to include late mixin binding, augmented constructor toString,
   correct IE toString/valueOf assignments, and separated complex logic into Class#addMethod. [kangax, Tobie Langel]
@@ -15,11 +15,11 @@
 
 * Fix Array#inersect not returning correct result if intersected value is 0. [jddalton]
 
-* Make Form.Element.getValue/setValue return null for unknown/unsupported elements. Closes #8381 [jddalton, tdd]
+* Make Form.Element.getValue/setValue return null for unknown/unsupported elements. Closes #8381. [jddalton, tdd]
 
-* Optimize by using "_each" instead of "each" where applicable. Closes #9092 [sylvainzimmer]
+* Optimize by using "_each" instead of "each" where applicable. Closes #9092. [sylvainzimmer]
 
-* Preserve inline display style when using Element#show and Element#hide. Closes #3868 [anonymous, Tobie Langel]
+* Preserve inline display style when using Element#show and Element#hide. Closes #3868. [anonymous, Tobie Langel]
 
 * Ensure Element#hide and Element#show return element. [jddalton]
 
