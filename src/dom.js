@@ -281,9 +281,10 @@ Element.Methods = {
   
   readAttribute: function(element, name) {
     element = $(element);
+    var t = Element._attributeTranslations.read;
+    if (t.names[name]) name = t.names[name];
+    
     if (Prototype.Browser.IE) {
-      var t = Element._attributeTranslations.read;
-      if (t.names[name]) name = t.names[name];
       if(element.tagName.toUpperCase() == 'FORM' &&
         !/^((child|parent)Node|(next|previous)Sibling)$/.test(name) &&
           element.children[name]){
@@ -294,7 +295,8 @@ Element.Methods = {
         return (!element.attributes || !element.attributes[name]) ? null : 
          element.attributes[name].value;
       }
-    }
+    } else if (t.values[name]) return t.values[name](element, name);
+    
     return element.getAttribute(name);
   },
   
@@ -673,10 +675,29 @@ Element._attributeTranslations = {
     names: {
       className: 'class',
       htmlFor:   'for'      
-    }, 
+    },
     values: { }
+  },
+  
+  read: {
+    names: { },
+    values: {
+      _flag: function(element, attribute) {
+        return $(element).hasAttribute(attribute) ? attribute : null;
+      }
+    }
   }
 };
+
+(function(v) {
+  Object.extend(v, {
+    disabled: v._flag,
+    checked:  v._flag,
+    readonly: v._flag,
+    multiple: v._flag
+  });
+})(Element._attributeTranslations.read.values);
+
 
 if (Prototype.Browser.Opera) { 
   Element.Methods.getStyle = Element.Methods.getStyle.wrap( 
@@ -809,36 +830,35 @@ else if (Prototype.Browser.IE) {
     return element;   
   };
 
-  Element._attributeTranslations = {
-    read: {
-      names: {
-        'class': 'className',
-        'for':   'htmlFor'
-      },
-      values: {
-        _getAttr: function(element, attribute) {
-          return element.getAttribute(attribute, 2);
-        },
-        _getAttrNode: function(element, attribute) {
-          var node = element.getAttributeNode(attribute);
-          return node ? node.value : "";
-        },
-        _getEv: function(element, attribute) {
-          attribute = element.getAttribute(attribute);
-          return attribute ? attribute.toString().slice(23, -2) : null;
-        },
-        _flag: function(element, attribute) {
-          return $(element).hasAttribute(attribute) ? attribute : null;
-        },
-        style: function(element) {
-          return element.style.cssText.toLowerCase();
-        },
-        title: function(element) {
-          return element.title;
-        }
-      }
-    }
+  Element._attributeTranslations.read.names = {
+    'class': 'className',
+    'for':   'htmlFor'
   };
+
+  Object.extend(Element._attributeTranslations.read.values, {
+
+    _getAttr: function(element, attribute) {
+      return element.getAttribute(attribute, 2);
+    },
+    
+    _getAttrNode: function(element, attribute) {
+      var node = element.getAttributeNode(attribute);
+      return node ? node.value : "";
+    },
+    
+    _getEv: function(element, attribute) {
+      attribute = element.getAttribute(attribute);
+      return attribute ? attribute.toString().slice(23, -2) : null;
+    },
+    
+    style: function(element) {
+      return element.style.cssText.toLowerCase();
+    },
+    
+    title: function(element) {
+      return element.title;
+    }
+  });
   
   Element._attributeTranslations.write = {
     names: Object.extend({
@@ -874,10 +894,6 @@ else if (Prototype.Browser.IE) {
       src:         v._getAttr,
       type:        v._getAttr,
       action:      v._getAttrNode,
-      disabled:    v._flag,
-      checked:     v._flag,
-      readonly:    v._flag,
-      multiple:    v._flag,
       onload:      v._getEv,
       onunload:    v._getEv,
       onclick:     v._getEv,
