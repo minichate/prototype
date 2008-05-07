@@ -698,6 +698,12 @@ Element._attributeTranslations = {
   });
 })(Element._attributeTranslations.read.values);
 
+$w('cellPadding cellSpacing colSpan rowSpan vAlign dateTime accessKey ' +
+'tabIndex encType maxLength longDesc frameBorder').each(function(attr) {
+  Element._attributeTranslations.read.names[attr.toLowerCase()]  = attr;
+  Element._attributeTranslations.write.names[attr.toLowerCase()] = attr;
+});
+
 if (Prototype.Browser.Opera) { 
   Element.Methods.getStyle = Element.Methods.getStyle.wrap( 
     function(proceed, element, style) {
@@ -829,10 +835,11 @@ else if (Prototype.Browser.IE) {
     return element;   
   };
 
-  Element._attributeTranslations.read.names = {
+  Object.extend(Element._attributeTranslations.read.names, {
+    'readonly': 'readOnly',
     'class': 'className',
-    'for':   'htmlFor'
-  };
+    'for': 'htmlFor'
+  });
 
   Object.extend(Element._attributeTranslations.read.values, {
 
@@ -859,35 +866,27 @@ else if (Prototype.Browser.IE) {
     }
   });
   
-  Element._attributeTranslations.write = {
-    names: Object.extend({
-      cellpadding: 'cellPadding',
-      cellspacing: 'cellSpacing'
-    }, Element._attributeTranslations.read.names),
-    values: {
-      checked: function(element, value) {
-        element.checked = !!value;
-      },
-      
-      encType: function(element, value) {  
-        element.getAttributeNode('encType').value = value;  
-      },
-      
-      style: function(element, value) {
-        element.style.cssText = value ? value : '';
-      }
-    }
-  };
-  
-  Element._attributeTranslations.has = {};
+  Object.extend(Element._attributeTranslations.write.values, {
+    checked: function(element, value) {
+      element.checked = !!value;
+    },
     
-  $w('colSpan rowSpan vAlign dateTime accessKey tabIndex ' +
-      'encType maxLength readOnly longDesc frameBorder').each(function(attr) {
-    Element._attributeTranslations.write.names[attr.toLowerCase()] = attr;
-    Element._attributeTranslations.has[attr.toLowerCase()] = attr;
+    encType: function(element, value) {  
+      element.getAttributeNode('encType').value = value;  
+    },
+    
+    style: function(element, value) {
+      element.style.cssText = value ? value : '';
+    }
   });
   
+  Object.extend(Element._attributeTranslations.write.names, Element._attributeTranslations.read.names);
+  (function(n) { delete n.className; delete n.htmlFor })(Element._attributeTranslations.write.names);
+  
+  Element._attributeTranslations.has = Element._attributeTranslations.write.names;
+  
   (function(v) {
+    delete v.readonly;
     Object.extend(v, {
       href:        v._getAttr,
       src:         v._getAttr,
@@ -910,7 +909,11 @@ else if (Prototype.Browser.IE) {
       onsubmit:    v._getEv,
       onreset:     v._getEv,
       onselect:    v._getEv,
-      onchange:    v._getEv
+      onchange:    v._getEv,
+      readOnly:    v._flag.wrap(function(proceed, element, attribute) {
+        attribute = proceed(element, attribute);
+        return attribute? attribute.toLowerCase() : null;
+      })
     });
   })(Element._attributeTranslations.read.values);
 
