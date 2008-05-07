@@ -1,3 +1,5 @@
+* Extend Form.Elements to BUTTON elements. Closes #9708. [jddalton, mensler]
+
 * Avoid potential memory leaks in Firefox. (wpc, Tobie Langel) [#12 state:resolved]
 
 * More unit tests for Object.isHash. (Tobie Langel)
