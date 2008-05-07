@@ -1,3 +1,13 @@
+* Avoid potential memory leaks in Firefox. (wpc, Tobie Langel) [#12 state:resolved]
+
+* More unit tests for Object.isHash. (Tobie Langel)
+
+* Allow Function#argumentNames to handle line breaks between arguments. (Geoff M. Granum, Tobie Langel) [#63 state:resolved]
+
+* Replace all instances of foo.__proto__ by foo['__proto__'] for Caja-compliance. (Tobie Langel)
+
+* Speed up Function#argumentNames. Avoid Enum dependency. (Samuel Lebeau, Tobie Langel)
+
 * Make Element#readAttribute return consistent values, across browsers, for flag attributes. [Crash, jddalton]
 
 * Make Element#readAttribute resolve the attribute name before using it. [jddalton]
@@ -18,7 +28,7 @@
 
 * Form#serializeElements should not serialize file inputs. (kangax, Lonesome Boy)
 
-* For consistency, add additional optional parameter "context" to Number.prototype.times. (samleb)
+* For consistency, add additional optional parameter "context" to Number.prototype.times. (Samuel Lebeau)
 
 * Make Element#getStyle calculate height/width when they are set to "auto". Closes #10116. [kangax, ylucas]
 
