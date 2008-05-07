@@ -1,3 +1,5 @@
+* Make Element#readAttribute return consistent values, across browsers, for flag attributes. [Crash, jddalton]
+
 * Make Element#readAttribute resolve the attribute name before using it. [jddalton]
 
 * Make sure Event#stopObserving works when passed non-string value as an eventName (e.g. when using "each(Event.stopObserving)") [kangax]
