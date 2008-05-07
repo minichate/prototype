@@ -294,16 +294,19 @@ Object.extend(Event, (function() {
   
     stopObserving: function(element, eventName, handler) {
       element = $(element);
-      var id = getEventID(element);
+      var id = getEventID(element), c = cache[id];
       
-      if (!handler && eventName) {
+      if(!c){
+        return element;
+      }
+      else if (!handler && eventName) {
         getWrappersForEventName(id, eventName).each(function(wrapper) {
           Event.stopObserving(element, eventName, wrapper.handler);
         });
         return element;
-        
-      } else if (!eventName) {
-        Object.keys(getCacheForID(id)).without("element").each(function(eventName) {
+      }
+      else if (!eventName) {
+        Object.keys(c).without("element").each(function(eventName) {
           Event.stopObserving(element, eventName);
         });
         return element;
