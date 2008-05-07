@@ -966,6 +966,9 @@ new Test.Unit.Runner({
     var table = $('write_attribute_table');
     this.assertEqual('4', table.readAttribute('cellspacing'));
     this.assertEqual('6', table.readAttribute('cellpadding'));
+    
+    // test for consistent flag value across browsers
+    this.assertEqual('disabled', $('attributes_with_issues_disabled_blank').readAttribute('disabled'));
   },
   
   testElementWriteAttribute: function() {
