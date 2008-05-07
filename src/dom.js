@@ -674,7 +674,8 @@ Element._attributeTranslations = {
   write: {
     names: {
       className: 'class',
-      htmlFor:   'for'      
+      readOnly:  'readonly',
+      htmlFor:   'for'
     },
     values: { }
   },
@@ -700,9 +701,10 @@ Element._attributeTranslations = {
 
 $w('cellPadding cellSpacing colSpan rowSpan vAlign dateTime accessKey ' +
 'tabIndex encType maxLength longDesc frameBorder').each(function(attr) {
-  Element._attributeTranslations.read.names[attr.toLowerCase()]  = attr;
   Element._attributeTranslations.write.names[attr.toLowerCase()] = attr;
 });
+
+Object.extend(Element._attributeTranslations.read.names, Element._attributeTranslations.write.names);
 
 if (Prototype.Browser.Opera) { 
   Element.Methods.getStyle = Element.Methods.getStyle.wrap( 
@@ -881,7 +883,9 @@ else if (Prototype.Browser.IE) {
   });
   
   Object.extend(Element._attributeTranslations.write.names, Element._attributeTranslations.read.names);
-  (function(n) { delete n.className; delete n.htmlFor })(Element._attributeTranslations.write.names);
+  [Element._attributeTranslations.read.names, Element._attributeTranslations.write.names].each(function(t) {
+    delete t.className; delete t.htmlFor; delete t.readOnly
+  });
   
   Element._attributeTranslations.has = Element._attributeTranslations.write.names;
   
