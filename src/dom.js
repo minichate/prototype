@@ -52,7 +52,7 @@ if (!Node.ELEMENT_NODE) {
 	  tagName = '<' + tagName +
 	    (attributes.name ? ' name="' + attributes.name + '"' : '') +
 	      (attributes.type ? ' type="' + attributes.type + '"' : '') + '>';
-	  delete attributes.name, attributes.type;
+	  delete attributes.name; delete attributes.type;
 	  return Element.writeAttribute(document.createElement(tagName), attributes);
     }
     if (!cache[tagName]) cache[tagName] = Element.extend(document.createElement(tagName));
