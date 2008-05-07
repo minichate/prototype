@@ -208,7 +208,8 @@ Form.Element.Serializers = {
   },
 
   button: function(element, value){
-    return Form.Element.Serializers.textarea(element, value);
+    if (Object.isUndefined(value)) return element.innerHTML;
+    else element.innerHTML = value;
   },
 
   textarea: function(element, value) {
