@@ -296,7 +296,7 @@ Object.extend(Event, (function() {
       element = $(element);
       var id = getEventID(element), c = cache[id];
       
-      if(!c){
+      if (!c) {
         return element;
       }
       else if (!handler && eventName) {
@@ -390,7 +390,8 @@ Object.extend(document, {
   if (document.addEventListener) {
     document.addEventListener("DOMContentLoaded", function() {
       // Ensure all stylesheets are loaded, solves Opera issue
-      if ($A(document.styleSheets).any(function(s) { return s.disabled }))
+      if (Prototype.Browser.Opera && 
+          $A(document.styleSheets).any(function(s) { return s.disabled }))
         return arguments.callee.defer();
       fireContentLoadedEvent();
     }, false);
