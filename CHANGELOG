@@ -1,3 +1,5 @@
+* Stop IE from erroring when calling Event#stopObserving on an element with no observers. [jddalton]
+
 * Fix an issue where Element#getHeight returns null if the height is set to "auto." (kangax, ylucas, jddalton)
 
 * Make Element#absolutize use Element#getDimensions to prevent certain failures in IE. (kangax, pphilipp, jddalton)
