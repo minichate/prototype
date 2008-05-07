@@ -1,3 +1,5 @@
+* Allow versions of WebKit that support DOMContentLoaded event to use it instead of setInterval(). Closes LH#64. [LaC]
+
 * Stop IE from erroring when calling Event#stopObserving on an element with no observers. [jddalton]
 
 * Fix an issue where Element#getHeight returns null if the height is set to "auto." (kangax, ylucas, jddalton)
