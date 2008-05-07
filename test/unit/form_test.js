@@ -329,6 +329,7 @@ new Test.Unit.Runner({
   },
 
   testGetValue: function() {
+    this.assertEqual('Click Me', Form.Element.getValue('button_type_button')); // Button element
     this.assertEqual(null, Form.Element.getValue('someBorkedId')); // Unknown
  	this.assertEqual(null, Form.Element.getValue('form')); // Unsupported
   },
@@ -336,6 +337,11 @@ new Test.Unit.Runner({
   testSetValue: function(){
     // unkown element
     this.assertEqual(null, Form.Element.setValue('someBorkedId', 'blah')); // Unknown
+    
+    // test button element
+    var button = $('button_type_button');
+    button.setValue('I Changed');
+    this.assertEqual('I Changed', button.getValue());
     
     // text input
     var input = $('input_enabled'), oldValue = input.getValue();
@@ -365,5 +371,10 @@ new Test.Unit.Runner({
       'multiple select options improperly set');
     input.setValue(['1', '3']);
     this.assertEnumEqual(['1', '3'], input.getValue());
+    
+    // test chainability
+    var input = $('input_enabled');
+    this.assert(Object.isElement(button.setValue('New Value')));
+    this.assert(Object.isElement(input.setValue('New Value')));
   }
 });
