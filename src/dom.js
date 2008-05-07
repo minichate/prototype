@@ -698,7 +698,6 @@ Element._attributeTranslations = {
   });
 })(Element._attributeTranslations.read.values);
 
-
 if (Prototype.Browser.Opera) { 
   Element.Methods.getStyle = Element.Methods.getStyle.wrap( 
     function(proceed, element, style) {
