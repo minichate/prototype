@@ -167,7 +167,8 @@ Object.extend(Event, (function() {
     var id = getEventID(element), wrappers = getWrappersForEventName(id, eventName);
     if (!wrappers.dispatcher) {
       wrappers.dispatcher = function(event) {
-        getWrappersForEventName(id, eventName).invoke('call', null, event);
+        var w = getWrappersForEventName(id, eventName);
+        for(var i = 0, l = w.length; i < l; i++) w[i](event); // execute wrappers
       };
       if(dispatchWrapper) wrappers.dispatcher = wrappers.dispatcher.wrap(dispatchWrapper);
       element.attachEvent("on" + getDOMEventName(eventName), wrappers.dispatcher);
