@@ -254,7 +254,7 @@ Object.extend(Event, (function() {
     	if(document.loaded){
     	  proceed(event);
     	} else {
-    	  arguments.callee.defer(event);
+    	  arguments.callee.defer(proceed, event);
     	}
     });
     
