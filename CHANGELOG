@@ -1,3 +1,5 @@
+* Fixed cross sub-domain issue with responseXML in Firefox 1.5. Closes #10921. [dcpedit, jddalton, Tobie Langel]
+
 * Make Opera 9.2x handle the base tag with relative urls in Ajax.Request. Closes #9373. [fearphage, jddalton, xmedeko]
 
 * Allow Ajax query params to be used with any HTTP method. Closes #11009. [cfis, jddalton]
