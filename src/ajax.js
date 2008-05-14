@@ -91,6 +91,13 @@ Ajax.Request = Class.create(Ajax.Base, {
   },
 
   request: function(url) {
+  
+    var base;
+    if (Prototype.Browser.Opera && opera.version() < 9.5 &&
+        !/^(file|ftp|https?):/.test(url) &&
+         (base = $(document.documentElement).down('base'))
+      url = base.readAttribute('href') + url;
+    
     this.url = url;
     this.method = this.options.method;
     var params = Object.clone(this.options.parameters);
