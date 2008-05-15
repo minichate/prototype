@@ -966,9 +966,6 @@ new Test.Unit.Runner({
     var table = $('write_attribute_table');
     this.assertEqual('4', table.readAttribute('cellspacing'));
     this.assertEqual('6', table.readAttribute('cellpadding'));
-    
-    // test for consistent flag value across browsers
-    this.assertEqual('disabled', $('attributes_with_issues_disabled_blank').readAttribute('disabled'));
   },
   
   testElementWriteAttribute: function() {
@@ -1035,19 +1032,6 @@ new Test.Unit.Runner({
     this.assertEqual('martin',    p.readAttribute('name'));
     this.assertEqual('stockholm', p.readAttribute('location'));
     this.assertEqual('26',        p.readAttribute('age'));
-  },
-  
-  testElementHasAttribute: function() {
-    var label = $('write_attribute_label');
-    this.assertIdentical(true, label.hasAttribute('for'));
-    this.assertIdentical(true, Element.hasAttribute(label, 'htmlFor'));
-    this.assertIdentical(true, Element.hasAttribute(label, 'htmlfor'));
-    this.assertIdentical(false, label.hasAttribute('class'));
-    this.assertIdentical(false, label.hasAttribute('className'));
-    
-    var input = $('write_attribute_input');
-    this.assertNotIdentical(null, input.hasAttribute('readonly'));
-    this.assertNotIdentical(null, input.hasAttribute('readOnly'));
   },
   
   testNewElement: function() {
