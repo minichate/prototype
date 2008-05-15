@@ -1,3 +1,5 @@
+* Force Element.Methods.Simulated.hasAttribute() to return a boolean value. [jddalton]
+
 * Fixed IE error in the Selector class that caused matching element ids to fail when the element wasn't attached to the document. Closes #9766. [jddalton, kangax, shazam]
 
 * Force Element.extend() to skip XML nodes to avoid errors in IE, use the static Element methods instead. Closes #9709. [jddalton, yanick.rochon]
