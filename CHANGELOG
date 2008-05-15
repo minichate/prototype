@@ -1,3 +1,5 @@
+* Force Element.extend() to skip XML nodes to avoid errors in IE, use the static Element methods instead. Closes #9709. [jddalton, yanick.rochon]
+
 * Fixed cross sub-domain issue with responseXML in Firefox 1.5. Closes #10921. [dcpedit, jddalton, Tobie Langel]
 
 * Make Opera 9.2x handle the base tag with relative urls in Ajax.Request. Closes #9373. [fearphage, jddalton, xmedeko]
