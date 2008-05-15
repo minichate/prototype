@@ -1131,7 +1131,8 @@ Element.extend = (function() {
   
   var extend = Object.extend(function(element) {
     if (!element || element._extendedByPrototype || 
-        element.nodeType != 1 || element == window) return element;
+        element.nodeType != 1 || element == window ||
+          !(element.ownerDocument || element).body) return element;
 
     var methods = Object.clone(Methods),
       tagName = element.tagName.toUpperCase(), property, value;
