@@ -1,3 +1,7 @@
+Array.prototype.reduce = function() {
+  return this.length > 1 ? this : this[0];
+};
+
 var $RunBenchmarks = false;
 
 new Test.Unit.Runner({
