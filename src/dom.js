@@ -837,12 +837,15 @@ else if (Prototype.Browser.IE) {
     return element;   
   };
 
-  Object.extend(Element._attributeTranslations.read.names, {
-    'readonly': 'readOnly',
-    'class': 'className',
-    'for': 'htmlFor'
-  });
+  // Keep "has" translations like className -> class
+  Element._attributeTranslations.has = Object.clone(Element._attributeTranslations.write.names);
 
+  // Extend "write" and "read" translations with IE specific ones and remove conflicting translations
+  [Element._attributeTranslations.read.names, Element._attributeTranslations.write.names].each(function(t) {
+    Object.extend(t, {'readonly':'readOnly', 'class':'className', 'for':'htmlFor'});
+    delete t.className; delete t.htmlFor; delete t.readOnly;
+  });
+  
   Object.extend(Element._attributeTranslations.read.values, {
 
     _getAttr: function(element, attribute) {
@@ -882,13 +885,6 @@ else if (Prototype.Browser.IE) {
     }
   });
   
-  Object.extend(Element._attributeTranslations.write.names, Element._attributeTranslations.read.names);
-  [Element._attributeTranslations.read.names, Element._attributeTranslations.write.names].each(function(t) {
-    delete t.className; delete t.htmlFor; delete t.readOnly
-  });
-  
-  Element._attributeTranslations.has = Element._attributeTranslations.write.names;
-  
   (function(v) {
     delete v.readonly;
     Object.extend(v, {
@@ -916,7 +912,7 @@ else if (Prototype.Browser.IE) {
       onchange:    v._getEv,
       readOnly:    v._flag.wrap(function(proceed, element, attribute) {
         attribute = proceed(element, attribute);
-        return attribute? attribute.toLowerCase() : null;
+        return attribute? 'readonly' : null;
       })
     });
   })(Element._attributeTranslations.read.values);
