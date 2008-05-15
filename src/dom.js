@@ -671,11 +671,14 @@ Object.extend(Element.Methods, {
 });
 
 Element._attributeTranslations = {
+  has: { },
+  
   write: {
     names: {
       className: 'class',
       readOnly:  'readonly',
-      htmlFor:   'for'
+      htmlFor:   'for',
+      htmlfor:   'for'
     },
     values: { }
   },
@@ -704,7 +707,9 @@ $w('cellPadding cellSpacing colSpan rowSpan vAlign dateTime accessKey ' +
   Element._attributeTranslations.write.names[attr.toLowerCase()] = attr;
 });
 
-Object.extend(Element._attributeTranslations.read.names, Element._attributeTranslations.write.names);
+[Element._attributeTranslations.read.names, Element._attributeTranslations.has].each(function(t) {
+  Object.extend(t, Element._attributeTranslations.write.names);
+});
 
 if (Prototype.Browser.Opera) { 
   Element.Methods.getStyle = Element.Methods.getStyle.wrap( 
@@ -836,13 +841,10 @@ else if (Prototype.Browser.IE) {
       'alpha(opacity=' + (value * 100) + ')';
     return element;   
   };
-
-  // Keep "has" translations like className -> class
-  Element._attributeTranslations.has = Object.clone(Element._attributeTranslations.write.names);
-
+  
   // Extend "write" and "read" translations with IE specific ones and remove conflicting translations
   [Element._attributeTranslations.read.names, Element._attributeTranslations.write.names].each(function(t) {
-    Object.extend(t, {'readonly':'readOnly', 'class':'className', 'for':'htmlFor'});
+    Object.extend(t, {'readonly':'readOnly', 'class':'className', 'for':'htmlFor', 'htmlfor':'htmlFor'});
     delete t.className; delete t.htmlFor; delete t.readOnly;
   });
   
@@ -1160,6 +1162,7 @@ Element.extend = (function() {
 })();
 
 Element.hasAttribute = function(element, attribute) {
+  attribute = Element._attributeTranslations.has[attribute] || attribute;
   if ((element = $(element)).hasAttribute) return element.hasAttribute(attribute);
   return Element.Methods.Simulated.hasAttribute(element, attribute);
 };
