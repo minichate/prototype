@@ -91,6 +91,20 @@ div.style-test { margin-left: 1px }
   background: #cbeff3;
 }
 
+#clonePositionSource {
+  position: absolute;
+  top: 10px;
+  left: 560px;
+  height: 20px;
+  width: 30px;
+  background: red;
+}
+
+#clonePositionTarget {
+  position: absolute;
+  background: #21bacc;
+}
+
 #notInlineAbsoluted { position: absolute; }
 
 #elementToViewportDimensions {
