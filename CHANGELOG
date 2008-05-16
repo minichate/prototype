@@ -1,3 +1,5 @@
+* Correct how Element#clonePosition sets element dimensions. Resolves part 2 of LH#9. [Nick Stakenburg]
+
 * Ensure Element#getDimensions works with display:none ancestors. Resolves part 1 of LH#9. [Nick Stakenburg]
 
 * Make Element#viewportOffset work with Opera 9.5. Closes #10486. [Nick Stakenburg]
