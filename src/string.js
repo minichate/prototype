@@ -221,18 +221,6 @@ String.prototype.gsub.prepareReplacement = function(replacement) {
 
 String.prototype.parseQuery = String.prototype.toQueryParams;
 
-if (Prototype.Browser.IE)
-  // IE converts all newlines to carriage returns so we swap them back
-  String.prototype.unescapeHTML = String.prototype.unescapeHTML.wrap(function(proceed) {
-    return proceed().replace(/\r/g,'\n')
-  });
-// Safari 3.x has issues with escaping the ">" character
-if (Prototype.Browser.WebKit && Prototype.BrowserFeatures.SelectorsAPI)
-  // We cannot wrap the method because it has custom properties attached to it, so instead we modify its source
-  String.prototype.escapeHTML = new Function('',
-    String.prototype.escapeHTML.toString().substring(14).replace(/;?\s*}$/,'') + '.replace(/>/g,"&gt;")'
-  );
-
 Object.extend(String.prototype.escapeHTML, {
   container: document.createElement('pre'),
   text: document.createTextNode('')
@@ -240,6 +228,25 @@ Object.extend(String.prototype.escapeHTML, {
 
 String.prototype.escapeHTML.container.appendChild(String.prototype.escapeHTML.text);
 
+if (Prototype.Browser.IE)
+  // IE converts all newlines to carriage returns so we swap them back
+  String.prototype.unescapeHTML = String.prototype.unescapeHTML.wrap(function(proceed) {
+    return proceed().replace(/\r/g, '\n')
+  });
+
+if (Prototype.Browser.WebKit && Prototype.BrowserFeatures.SelectorsAPI)
+  // Safari 3.x has issues with escaping the ">" character
+  (function() {
+    var escapeHTML = String.prototype.escapeHTML;
+    Object.extend(
+      String.prototype.escapeHTML = escapeHTML.wrap(function(proceed) {
+        return proceed().replace(/>/g, "&gt;")
+      }), {
+      container: escapeHTML.container,
+      text: escapeHTML.text
+    })
+  })();
+  
 if ('&'.escapeHTML() !== '&amp;') {
   // Safari 2.x has issues with escaping html inside a "pre" element so we use the deprecated "xmp" element instead
   Object.extend(String.prototype.escapeHTML, {
