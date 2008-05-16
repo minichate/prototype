@@ -627,7 +627,7 @@ Element.Methods = {
         valueT -= element.scrollTop  || 0;
         valueL -= element.scrollLeft || 0;
       }
-    } while (element = element.parentNode);
+    } while ((element = element.parentNode) && element.nodeType != 9);
 
     return Element._returnOffset(valueL, valueT);
   },
