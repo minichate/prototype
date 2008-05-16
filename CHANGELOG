@@ -1,3 +1,5 @@
+* Make Element#relativize preserve the dimensions/coordinates of absolutely positioned elements. Closes #9168. [dmmd, jddalton, kangax]
+
 * Fix Opera error in Element#viewportOffset when calculating offset values for document. [jddalton]
 
 * Make document.viewport.getDimensions() work with Opera 9.5. Closes #11302 [arty, jdalton, Matthew Leverton, Nick Stakenburg]
