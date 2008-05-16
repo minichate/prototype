@@ -1,3 +1,5 @@
+* Make Element#viewportOffset work with Opera 9.5. Closes #10486. [Nick Stakenburg]
+
 * Force Element.Methods.Simulated.hasAttribute() to return a boolean value. [jddalton]
 
 * Fixed IE error in the Selector class that caused matching element ids to fail when the element wasn't attached to the document. Closes #9766. [jddalton, kangax, shazam]
