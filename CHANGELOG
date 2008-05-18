@@ -1,4 +1,6 @@
-* Fix IE bug in Element#getOffsetParent caused by a strict doctype and relatively positioned elements. Addresses trac #11473 and LH #90. [jddalton, Nick Stakenburg]
+* Correct Element#viewportOffset results and make it work with Opera 9.5. Closes #11473, #10486. [jddalton, Nick Stakenburg]
+
+* Fix IE bug in Element#getOffsetParent caused by a strict doctype and relatively positioned elements. Addresses trac #11473 and Closes LH #90. [jddalton, Nick Stakenburg]
 
 * Make Element#relativize preserve the dimensions/coordinates of absolutely positioned elements. Closes #9168. [dmmd, jddalton, kangax]
 
