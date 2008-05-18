@@ -637,25 +637,24 @@ Element.Methods = {
   viewportOffset: function(forElement) {
     forElement = $(forElement);
 
-    var element = forElement, valueT = 0, valueL = 0;
+    var element = forElement, valueT = 0, valueL = 0,
+    endElement = (Prototype.Browser.Opera && opera.version() < 9.5) ? document.documentElement : document;
+    
     do {
       valueT += element.offsetTop  || 0;
       valueL += element.offsetLeft || 0;
-
-      // Safari fix
-      if (element.offsetParent == document.body &&
-        Element.getStyle(element, 'position') == 'absolute') break;
-
-    } while (element = element.offsetParent);
+    } while ((element = element.getOffsetParent()) != document.body);
 
     element = forElement;
-    do {
-      if (!Prototype.Browser.Opera || element.tagName.toUpperCase() == 'BODY') {
+    
+    if (Element.getStyle(element, 'position') != 'fixed') {
+      while ((element = element.parentNode) && element != endElement) {
+        if (Element.getStyle(element, 'position') == 'fixed') break;
         valueT -= element.scrollTop  || 0;
         valueL -= element.scrollLeft || 0;
       }
-    } while (element = element.parentNode);
-
+    }
+    
     return Element._returnOffset(valueL, valueT);
   },
 
