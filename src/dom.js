@@ -624,10 +624,10 @@ Element.Methods = {
   
   getOffsetParent: function(element) {
   	element = $(element);
-    if (element.offsetParent) return $(element.offsetParent);
-    if (element == document.body) return $(element);
-    
-    while ((element = element.parentNode) && element != document.body)
+    var op = element.offsetParent;
+    if (op && op != document.documentElement) return $(op);
+
+    while ((element = element.parentNode) && element.tagName.toUpperCase() != 'HTML')
       if (Element.getStyle(element, 'position') != 'static')
         return $(element);
 
