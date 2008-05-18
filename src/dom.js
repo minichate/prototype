@@ -624,18 +624,14 @@ Element.Methods = {
   
   getOffsetParent: function(element) {
   	element = $(element);
-    var op = element.offsetParent, body = document.body, docElement = document.documentElement;  
-
-    /* IE with strict doctype may try to return documentElement as offsetParent  
-       on relatively positioned elements, we will return body instead */  
-    if (op && op !== docElement) return $(op);  
-    if (op === docElement || element === docElement || element === body) return $(body);  
+    if (element.offsetParent) return $(element.offsetParent);
+    if (element == document.body) return $(element);
     
-    while ((element = element.parentNode) && element !== body)  
+    while ((element = element.parentNode) && element != document.body)
       if (Element.getStyle(element, 'position') != 'static')
         return $(element);
 
-    return $(body);
+    return $(document.body);
   },
 
   viewportOffset: function(forElement) {
@@ -645,15 +641,20 @@ Element.Methods = {
     do {
       valueT += element.offsetTop  || 0;
       valueL += element.offsetLeft || 0;
-    } while ((element = element.getOffsetParent()) != document.body);
+
+      // Safari fix
+      if (element.offsetParent == document.body &&
+        Element.getStyle(element, 'position') == 'absolute') break;
+
+    } while (element = element.offsetParent);
 
     element = forElement;
     do {
-      if (!Prototype.Browser.Opera || element.tagName.toUpperCase() == 'HTML') {
+      if (!Prototype.Browser.Opera || element.tagName.toUpperCase() == 'BODY') {
         valueT -= element.scrollTop  || 0;
         valueL -= element.scrollLeft || 0;
       }
-    } while ((element = element.parentNode) && element.nodeType != 9);
+    } while (element = element.parentNode);
 
     return Element._returnOffset(valueL, valueT);
   },

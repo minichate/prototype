@@ -1,14 +1,10 @@
 * Make Element#relativize preserve the dimensions/coordinates of absolutely positioned elements. Closes #9168. [dmmd, jddalton, kangax]
 
-* Fix Opera error in Element#viewportOffset when calculating offset values for document. [jddalton]
-
 * Make document.viewport.getDimensions() work with Opera 9.5. Closes #11302 [arty, jdalton, Matthew Leverton, Nick Stakenburg]
 
 * Correct how Element#clonePosition sets element dimensions. Resolves part 2 of LH#9. [Nick Stakenburg]
 
 * Ensure Element#getDimensions works with display:none ancestors. Resolves part 1 of LH#9. [Nick Stakenburg]
-
-* Make Element#viewportOffset work with Opera 9.5. Closes #10486. [Nick Stakenburg]
 
 * Force Element.Methods.Simulated.hasAttribute() to return a boolean value. [jddalton]
 
@@ -118,8 +114,6 @@
 * Fix String#extractScripts from returning commented-out scripts. Closes #9599. [bubbatls, jddalton]
 
 * Fix Prototype#scriptFragment for compatibility with Safari and scripts containing non-ASCII characters. Closes #9663. [Alexey Proskuryakov, jddalton]
-
-* Fix Element#getOffsetParent and Element#viewportOffset IE style null error. Closes #11473. [jddalton]
 
 * Extend element argument in Element position methods. Closes #11472. [jddalton]
 
