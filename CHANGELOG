@@ -8,6 +8,8 @@
 
 * Ensure Element#getDimensions works with display:none ancestors. Resolves part 1 of LH#9. [Nick Stakenburg]
 
+* Add Element#getNumericStyle to return style values as integers. [jddalton, kangax]
+
 * Force Element.Methods.Simulated.hasAttribute() to return a boolean value. [jddalton]
 
 * Fixed IE error in the Selector class that caused matching element ids to fail when the element wasn't attached to the document. Closes #9766. [jddalton, kangax, shazam]
