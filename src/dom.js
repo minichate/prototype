@@ -660,7 +660,6 @@ Element.Methods = {
 
   clonePosition: function(element, source) {
     element = $(element);
-    source = $(source);
     var options = Object.extend({
       setLeft:    true,
       setTop:     true,
@@ -670,12 +669,16 @@ Element.Methods = {
       offsetLeft: 0
     }, arguments[2] || { });
 
+    // find page position of source
+    source = $(source);
+    var p = source.viewportOffset();
+
     // find coordinate system to use
-    var parent, delta = [0, 0];
-    
+    var delta = [0, 0];
+    var parent = null;
     // delta [0,0] will do fine with position: fixed elements, 
     // position:absolute needs offsetParent deltas
-    if (element.getStyle('position') == 'absolute') {
+    if (Element.getStyle(element, 'position') == 'absolute') {
       parent = element.getOffsetParent();
       delta = parent.viewportOffset();
     }
@@ -686,15 +689,11 @@ Element.Methods = {
       delta[1] -= document.body.offsetTop; 
     }
 
-    // find page position of source
-    var d = $(source).getDimensions(), p = source.viewportOffset();
-    
     // set position
-    if (options.setLeft)   element.style.left   = (p[0] - delta[0] + options.offsetLeft) + 'px';
-    if (options.setTop)    element.style.top    = (p[1] - delta[1] + options.offsetTop)  + 'px';
-    if (options.setWidth)  element.style.width  = (d.width  || 0) + 'px';
-    if (options.setHeight) element.style.height = (d.height || 0) + 'px';
-    
+    if (options.setLeft)   element.style.left  = (p[0] - delta[0] + options.offsetLeft) + 'px';
+    if (options.setTop)    element.style.top   = (p[1] - delta[1] + options.offsetTop) + 'px';
+    if (options.setWidth)  element.style.width = source.offsetWidth + 'px';
+    if (options.setHeight) element.style.height = source.offsetHeight + 'px';
     return element;
   }
 };

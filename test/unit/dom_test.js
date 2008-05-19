@@ -1179,21 +1179,7 @@ new Test.Unit.Runner({
       this.assertIdentical(100, $('getDimensionsBox'+num).down('.deepest').getDimensions().width);
     }, this);
   },
-  
-  testElementClonePosition: function() {
-    var target = $('clonePositionTarget').clonePosition('clonePositionSource', {
-      offsetTop: 20,
-      offsetLeft: 30
-    });
-    var position = target.cumulativeOffset(),
-    dimensions = target.getDimensions();
-    
-    this.assertIdentical(30, position.top);
-    this.assertIdentical(590, position.left);
-    this.assertIdentical(20, dimensions.height);
-    this.assertIdentical(30, dimensions.width);
-  },
-  
+      
   testDOMAttributesHavePrecedenceOverExtendedElementMethods: function() {
     this.assertNothingRaised(function() { $('dom_attribute_precedence').down('form') });
     this.assertEqual($('dom_attribute_precedence').down('input'), $('dom_attribute_precedence').down('form').update);
