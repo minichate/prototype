@@ -1185,7 +1185,30 @@ new Test.Unit.Runner({
       this.assertIdentical(100, $('getDimensionsBox'+num).down('.deepest').getDimensions().width);
     }, this);
   },
-      
+  
+  testElementClonePosition: function() {
+  
+    var position, target, left = 558, top = 8;
+    
+    target = $('clonePositionTarget').clonePosition('clonePositionSource', {
+      offsetTop: 20,
+      offsetLeft: 30
+    });
+    
+    position = target.cumulativeOffset();
+    this.assertIdentical(top  + 20 - 2, position.top);
+    this.assertIdentical(left + 30 - 2, position.left);
+    
+    target = $('clonePositionTarget').clonePosition('clonePositionSource');
+    position = target.cumulativeOffset();
+    dimensions = target.getDimensions();
+    
+    this.assertIdentical(top, position.top);
+    this.assertIdentical(left, position.left);
+    this.assertIdentical(20, dimensions.height);
+    this.assertIdentical(30, dimensions.width);
+  },
+  
   testDOMAttributesHavePrecedenceOverExtendedElementMethods: function() {
     this.assertNothingRaised(function() { $('dom_attribute_precedence').down('form') });
     this.assertEqual($('dom_attribute_precedence').down('input'), $('dom_attribute_precedence').down('form').update);
