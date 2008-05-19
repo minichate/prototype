@@ -6,6 +6,8 @@
 
 * Make document.viewport.getDimensions() work with Opera 9.5. Closes #11302 [arty, jdalton, Matthew Leverton, Nick Stakenburg]
 
+* Correct how Element#clonePosition sets element dimensions. Resolves part 2 of LH#9 and Closes #. [azazel, jddalton, Nick Stakenburg]
+
 * Ensure Element#getDimensions works with display:none ancestors. Resolves part 1 of LH#9. [Nick Stakenburg]
 
 * Add Element#getNumericStyle to return style values as integers. [jddalton, kangax]
