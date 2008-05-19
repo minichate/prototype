@@ -83,6 +83,7 @@ Ajax.Base = Class.create({
 
 Ajax.Request = Class.create(Ajax.Base, {
   _complete: false,
+  aborted: false,
   
   initialize: function($super, url, options) {
     $super(options);
@@ -153,6 +154,27 @@ Ajax.Request = Class.create(Ajax.Base, {
       }
     }
   })(),
+
+  abort: function() {
+    if(this._complete) return;
+    
+    // avoid MSIE/Mozilla calling other event handlers when aborted
+    this.transport.onreadystatechange = Prototype.emptyFunction; 
+    this.transport.abort();
+    this._complete = true;
+    this.aborted = true;
+    
+    var response = new Ajax.Response(this);
+    
+    ['Abort', 'Complete'].each(function(state) {
+      try {
+        (this.options['on' + state] || Prototype.emptyFunction)(response, response.headerJSON);
+        Ajax.Responders.dispatch('on' + state, this, response, response.headerJSON);
+      } catch (e) {
+        this.dispatchException(e);
+      }
+    }, this);
+  },
 
   onStateChange: function() {
     var readyState = this.transport.readyState;
