@@ -923,6 +923,12 @@ new Test.Unit.Runner({
     this.assertEqual(0.45, $('op1').setOpacity(0.45).getOpacity());
   },
   
+  testElementGetNumericStyle: function() {
+    this.assertIdentical(11, Element.getNumericStyle('style_test_2', 'font-size'));
+    this.assertIdentical(1,  Element.getNumericStyle('style_test_2', 'margin-left'));
+    this.assertIdentical(0,  Element.getNumericStyle(document.body, 'border-left-width'));
+  },
+  
   testElementReadAttribute: function() {
     var attribFormIssues = $('attributes_with_issues_form');
  	this.assertEqual('blah-class', attribFormIssues.readAttribute('class'));
