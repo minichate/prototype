@@ -398,6 +398,11 @@ Element.Methods = {
     return element;
   },
   
+  getNumericStyle: function (element, style) {
+    if(!(element = $(element))) return;
+    return parseFloat(Element.getStyle(element, style)) || 0;
+  },
+  
   getStyle: function(element, style) {
     element = $(element);
     style = style == 'float' ? 'cssFloat' : style.camelize();
