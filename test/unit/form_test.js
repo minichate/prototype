@@ -178,11 +178,11 @@ new Test.Unit.Runner({
     
     // Form.focusFirstElement shouldn't focus disabled elements
     var element = Form.findFirstElement('bigform');
-    this.assertEqual('submit', element.id);
+    this.assertEqual('input_submit', element.id);
     
     // Test IE doesn't select text on buttons
     Form.focusFirstElement('bigform');
-    if (document.selection) this.assertEqual('', getSelection(element));
+    if(document.selection) this.assertEqual('', getSelection(element));
     
     // Form.Element.activate shouldn't select text on buttons
     element = $('focus_text');
@@ -273,7 +273,19 @@ new Test.Unit.Runner({
                     $('form').serialize({ submit: 'inexistent' }));
 
     // file input should not be serialized  
-    this.assertEqual('', $('form_with_file_input').serialize());   
+    this.assertEqual('', $('form_with_file_input').serialize()); 
+    
+    // test with image input button
+    var expected = {clicky:'click me', greeting:'Hello', 'image_commit.x':2, 'image_commit.y':4};
+    this.assertHashEqual(expected, Form.serialize('inputs', {submit: $('image_submit'), x:2, y:4}));
+    
+    // test with button element
+    var expected = {clicky:'click me', greeting:'Hello', 'button_commit':'button submit me'};
+    this.assertHashEqual(expected, Form.serialize('inputs', {submit:'button_commit'}));
+    
+    // test control groups
+    var expected = {group_radio:'2r', group_checkbox:'2c'};
+    this.assertHashEqual(expected, Form.serialize('form_with_control_groups', {submit:'button_commit'}));
   },
   
   testFormMethodsOnExtendedElements: function() {
