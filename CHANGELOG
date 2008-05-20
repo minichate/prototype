@@ -1,3 +1,5 @@
+* Make Form#serializeElements more closely follow the W3C specifications. Closes LH#85. [jddalton]
+
 * Add Ajax.Request.abort method. Stops onSuccess handlers from being called after the request is aborted. Closes #9490. [augustus.kling, jddalton]
 
 * Correct Element#viewportOffset results and make it work with Opera 9.5. Closes #11473, #10486. [jddalton, Nick Stakenburg]
