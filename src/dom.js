@@ -220,7 +220,7 @@ Element.Methods = {
   
   siblings: function(element) {
     element = $(element);
-    return element.previousSiblings().reverse().concat(element.nextSiblings());
+    return Element.previousSiblings(element).reverse().concat(Element.nextSiblings(element));
   },
   
   match: function(element, selector) {
@@ -232,15 +232,15 @@ Element.Methods = {
   up: function(element, expression, index) {
     element = $(element);
     if (arguments.length == 1) return $(element.parentNode);
-    var ancestors = element.ancestors();
+    var ancestors = Element.ancestors(element);
     return Object.isNumber(expression) ? ancestors[expression] :
       Selector.findElement(ancestors, expression, index);
   },
   
   down: function(element, expression, index) {
     element = $(element);
-    if (arguments.length == 1) return element.firstDescendant();
-    return Object.isNumber(expression) ? element.descendants()[expression] :
+    if (arguments.length == 1) return Element.firstDescendant(element);
+    return Object.isNumber(expression) ? Element.descendants(element)[expression] :
       Element.select(element, expression)[index || 0];
   },
 
@@ -255,7 +255,7 @@ Element.Methods = {
   next: function(element, expression, index) {
     element = $(element);
     if (arguments.length == 1) return $(Selector.handlers.nextElementSibling(element));
-    var nextSiblings = element.nextSiblings();
+    var nextSiblings = Element.nextSiblings(element);
     return Object.isNumber(expression) ? nextSiblings[expression] :
       Selector.findElement(nextSiblings, expression, index);
   },
@@ -272,10 +272,10 @@ Element.Methods = {
   
   identify: function(element) {
     element = $(element);
-    var id = element.readAttribute('id'), self = arguments.callee;
+    var id = Element.readAttribute(element, 'id'), self = arguments.callee;
     if (id) return id;
     do { id = 'anonymous_element_' + self.counter++ } while ($(id));
-    element.writeAttribute('id', id);
+    Element.writeAttribute(element, 'id', id);
     return id;
   },
   
@@ -341,7 +341,7 @@ Element.Methods = {
 
   addClassName: function(element, className) {
     if (!(element = $(element))) return;
-    if (!element.hasClassName(className))
+    if (!Element.hasClassName(element, className))
       element.className += (element.className ? ' ' : '') + className;
     return element;
   },
@@ -355,7 +355,7 @@ Element.Methods = {
   
   toggleClassName: function(element, className) {
     if (!(element = $(element))) return;
-    return element[element.hasClassName(className) ?
+    return element[Element.hasClassName(element, className) ?
       'removeClassName' : 'addClassName'](className);
   },
   
@@ -393,7 +393,7 @@ Element.Methods = {
   
   scrollTo: function(element) {
     element = $(element);
-    var pos = element.cumulativeOffset();
+    var pos = Element.cumulativeOffset(element);
     window.scrollTo(pos[0], pos[1]);
     return element;
   },
@@ -425,10 +425,10 @@ Element.Methods = {
     if (Object.isString(styles)) {
       element.style.cssText += ';' + styles;
       return styles.include('opacity') ?
-        element.setOpacity(styles.match(/opacity:\s*(\d?\.?\d*)/)[1]) : element;
+        Element.setOpacity(element, styles.match(/opacity:\s*(\d?\.?\d*)/)[1]) : element;
     }
     for (var property in styles)
-      if (property == 'opacity') element.setOpacity(styles[property]);
+      if (property == 'opacity') Element.setOpacity(element, styles[property]);
       else 
         elementStyle[(property == 'float' || property == 'cssFloat') ?
           (Object.isUndefined(elementStyle.styleFloat) ? 'cssFloat' : 'styleFloat') : 
@@ -451,7 +451,7 @@ Element.Methods = {
     // *Width or *Height properties can return 0 on elements with display none,
     // or when ancestors have display none, so enable those temporarily
     if (dimensions.width == 0 || dimensions.height == 0) {
-      var check = element.ancestors(),
+      var check = Element.ancestors(element),
       restore = [], styles = [];
       check.push(element);
       
@@ -526,8 +526,8 @@ Element.Methods = {
     element = $(element);
     if (Element.getStyle(element, 'position') == 'absolute') return element;
 
-    var offsets = element.positionedOffset(),
-    dimensions = element.getDimensions(),
+    var offsets = Element.positionedOffset(element),
+    dimensions = Element.getDimensions(element),
     top = offsets[1],
     left = offsets[0],
     width = dimensions.width,
@@ -540,7 +540,7 @@ Element.Methods = {
       _originalHeight: element.style.height
     });
 
-    element.setStyle({
+    Element.setStyle(element, {
       position: 'absolute',
       top:      top + 'px',
       left:     left + 'px',
@@ -553,7 +553,7 @@ Element.Methods = {
 
   relativize: function(element) {
     element = $(element);
-    if (element.getStyle('position') == 'relative') return element;
+    if (Element.getStyle(element, 'position') == 'relative') return element;
     // Position.prepare(); // To be done manually by Scripty when it needs it.
 
     if(!element._originalTop){
@@ -573,7 +573,7 @@ Element.Methods = {
 
     element.style.position = 'relative';
     
-    var offsets = element.positionedOffset(),
+    var offsets = Element.positionedOffset(element),
     top  = element._originalTop  - offsets.top,
     left = element._originalLeft - offsets.left;
     
@@ -679,8 +679,8 @@ Element.Methods = {
     // delta [0,0] will do fine with position: fixed elements, 
     // position:absolute needs offsetParent deltas
     if (Element.getStyle(element, 'position') == 'absolute') {
-      parent = element.getOffsetParent();
-      delta = parent.viewportOffset();
+      parent = Element.getOffsetParent(element);
+      delta = Element.viewportOffset(parent);
     }
 
     // correct by body offsets (fixes Safari)
@@ -703,7 +703,7 @@ Element.Methods = {
     if (options.setLeft) element.style.left = (p[0] - delta[0] + borderOffset[0] + options.offsetLeft) + 'px';
     if (options.setTop)  element.style.top  = (p[1] - delta[1] + borderOffset[1] + options.offsetTop)  + 'px';
 
-    if (options.setWidth) element.setStyle({
+    if (options.setWidth) Element.setStyle(element, {
       width:        d.width + 'px',
       marginLeft:   paddingOffset[3] + 'px',
       marginRight:  paddingOffset[1] + 'px',
@@ -711,7 +711,7 @@ Element.Methods = {
       paddingRight: (Element.getNumericStyle(element, 'padding-right') + paddingOffset[1]) + 'px'
     });
 
-    if (options.setHeight) element.setStyle({
+    if (options.setHeight) Element.setStyle(element, {
       height:        d.height + 'px',
       marginTop:     paddingOffset[0] + 'px',
       marginBottom:  paddingOffset[2] + 'px',
@@ -872,7 +872,7 @@ else if (Prototype.Browser.IE) {
       (!currentStyle && element.style.zoom == 'normal'))
         element.style.zoom = 1;
     
-    var filter = element.getStyle('filter'), style = element.style;
+    var filter = Element.getStyle(element, 'filter'), style = element.style;
     if (value == 1 || value === '') {
       (filter = stripAlpha(filter)) ?
         style.filter = filter : style.removeAttribute('filter');
@@ -1069,7 +1069,7 @@ if ('outerHTML' in document.createElement('div')) {
     
     /* Avoid outerHTML for IE because it incorrectly removes the replaced elements childNodes */
     if (Element._insertionTranslations.tags[tagName] || Prototype.Browser.IE) {
-      var nextSibling = element.next(), fragment = Element._getContentFromAnonymousElement(tagName, stripped);
+      var nextSibling = Element.next(element), fragment = Element._getContentFromAnonymousElement(tagName, stripped);
       parent.replaceChild(fragment, element);
     }
     else element.outerHTML = stripped;
