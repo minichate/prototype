@@ -170,7 +170,7 @@ Object.extend(Event, (function() {
       var w = getWrappersForEventName(id, eventName);
       for(var i = 0, l = w.length; i < l; i++) w[i](event); // execute wrappers
     };
-    if(dispatchWrapper) wrappers.dispatcher = wrappers.dispatcher.wrap(dispatchWrapper);
+    if (dispatchWrapper) wrappers.dispatcher = wrappers.dispatcher.wrap(dispatchWrapper);
     element.attachEvent("on" + getDOMEventName(eventName), wrappers.dispatcher);
   }
   
@@ -250,7 +250,7 @@ Object.extend(Event, (function() {
     
     // Ensure window onload is fired after "dom:loaded"
     addEventDispatcher(window, 'load', function(proceed, event) {
-    	if (document.loaded){
+    	if (document.loaded) {
     	  proceed(event);
     	} else {
     	  arguments.callee.defer(proceed, event);
@@ -260,7 +260,7 @@ Object.extend(Event, (function() {
     // Ensure window onresize is fired only once per resize
     addEventDispatcher(window, 'resize', function(proceed, event) {
       var callee = arguments.callee, dimensions = document.viewport.getDimensions();
-      if (dimensions.width != callee.prevWidth || dimensions.height != callee.prevHeight){
+      if (dimensions.width != callee.prevWidth || dimensions.height != callee.prevHeight) {
         callee.prevWidth  = dimensions.width;
         callee.prevHeight = dimensions.height;
         proceed(event);
@@ -390,7 +390,7 @@ Object.extend(document, {
   
   function fireCssLoadedEvent() {
     var callee = arguments.callee;
-    if(callee.loaded) return;
+    if (callee.loaded) return;
     if (cssTimer) window.clearInterval(cssTimer);
     callee.loaded = true;
     document.fire("css:loaded");
@@ -448,7 +448,7 @@ Object.extend(document, {
       var target = Event.element(e), element = e.relatedTarget;
       if (!element) return;
       try {
-        if(!Element.descendantOf(element, target)) {
+        if (!Element.descendantOf(element, target)) {
           Element.fire(target, eventName);
         }
       } catch(e) { }
