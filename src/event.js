@@ -379,51 +379,87 @@ Object.extend(document, {
   /* Support for the DOMContentLoaded event is based on work by Dan Webb, 
      Matthias Miller, Dean Edwards, John Resig and Diego Perini. */
 
-  var timer;
+  var cssTimer, domTimer;
   
-  function fireContentLoadedEvent() {
+  function fireDomLoadedEvent() {
     if (document.loaded) return;
-    if (timer) window.clearInterval(timer);
+    if (domTimer) window.clearInterval(domTimer);
     document.loaded = true;
     document.fire("dom:loaded");
   }
   
+  function fireCssLoadedEvent() {
+    var callee = arguments.callee;
+    if(callee.loaded) return;
+    if (cssTimer) window.clearInterval(cssTimer);
+    callee.loaded = true;
+    document.fire("css:loaded");
+  }
+  
   if (document.addEventListener) {
-    document.addEventListener("DOMContentLoaded", function() {
-      // Ensure all stylesheets are loaded, solves Opera issue
-      if (Prototype.Browser.Opera && 
-          $A(document.styleSheets).any(function(s) { return s.disabled }))
-        return arguments.callee.defer();
-      fireContentLoadedEvent();
-    }, false);
-    
+    document.addEventListener("DOMContentLoaded", fireDomLoadedEvent, false);
   } else {
     document.attachEvent("onreadystatechange", function() {
       if (document.readyState == "complete") {
         document.detachEvent("onreadystatechange", arguments.callee);
-        fireContentLoadedEvent();
+        fireDomLoadedEvent();
       }
     });
     
     if (window == top) {
-      timer = setInterval(function() {
+      domTimer = setInterval(function() {
         try {
           document.documentElement.doScroll("left");
         } catch(e) { return }
-        fireContentLoadedEvent();
+        fireDomLoadedEvent();
       }, 10);
     }
   }
   
   // WebKit builds lower than 525.13 don't support DOMContentLoaded
   if (Prototype.Browser.WebKit && (navigator.userAgent.match(/AppleWebKit\/(\d+)/)[1] < 525)) {
-    timer = setInterval(function() {
-      if (/loaded|complete/.test(document.readyState) &&
-          document.styleSheets.length == $$('style, link[rel="stylesheet"]').length)
-        fireContentLoadedEvent();
+    domTimer = setInterval(function() {
+      if (/loaded|complete/.test(document.readyState))
+        fireDomLoadedEvent();
     }, 10);
   }
   
+  // Create custom css:loaded event
+  document.observe('dom:loaded', function() {
+    cssTimer = setInterval(Prototype.Browser.Opera ?
+      function() {
+        if (!$A(document.styleSheets).any(function(s) { return s.disabled }))
+          fireCssLoadedEvent();
+      } :
+      function() {
+        if (document.styleSheets.length >= $$('style, link[rel="stylesheet"]').length)
+          fireCssLoadedEvent();
+      }, 10);
+  });
+  
+  // Create custom mouse:enter and mouse:leave events
+  var ie = Prototype.Browser.IE,
+  action = $w(ie ? 'enter leave' : 'over out').map(function(v) { return 'mouse' + v }),
+  respond = function(eventName) {
+    return ie ? function(e) {
+      var element = Event.element(e);
+      Element.fire(element, eventName)
+    } : function(e) {
+      var target = Event.element(e), element = e.relatedTarget;
+      if (!element) return;
+      try {
+        if(!Element.descendantOf(element, target)) {
+          Element.fire(target, eventName);
+        }
+      } catch(e) { }
+    }
+  };
+  
+  // Attach custom mouse events to document
+  document.observe(action[0], respond('mouse:enter'))
+    .observe(action[1], respond('mouse:leave'));
+    
   // Worst case fallback... 
-  Event.observe(window, "load", fireContentLoadedEvent); 
+  Event.observe(window, "load", fireDomLoadedEvent);
+  Event.observe(window, "load", fireCssLoadedEvent);
 })();
