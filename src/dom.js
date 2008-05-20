@@ -1095,30 +1095,30 @@ Element._returnOffset = function(l, t) {
   return result;
 };
 
-Element._getContentFromAnonymousElement = (function() { 
-  var div = document.createElement('div'), fragment = document.createDocumentFragment();
+Object.extend(Element._getContentFromAnonymousElement = function(tagName, html) {
+  var callee = arguments.callee, node = callee.div,
+  t = Element._insertionTranslations.tags[tagName];
   
-  return function(tagName, html) {
-  
-    var node = div, t = Element._insertionTranslations.tags[tagName];
-    if (t) {
-      node.innerHTML= t[0] + html + t[1];
-      Element._fixAnchorsAfterUpdate(node, html); 
-      t[2].times(function() { node = node.firstChild });
-    } else {
-      node.innerHTML = html;
-      Element._fixAnchorsAfterUpdate(node, html);
-    }
-    
-    if (node.removeNode) {
-      fragment.appendChild(node).removeNode();
-    } else {
-      var i = node.childNodes.length;
-      while(i) fragment.insertBefore(node.childNodes[--i], fragment.firstChild);
-    }
-    return fragment;
+  if (t) {
+    node.innerHTML= t[0] + html + t[1];
+    Element._fixAnchorsAfterUpdate(node, html); 
+    t[2].times(function() { node = node.firstChild });
+  } else {
+    node.innerHTML = html;
+    Element._fixAnchorsAfterUpdate(node, html);
   }
-})();
+  
+  if (node.removeNode) {
+    callee.fragment.appendChild(node).removeNode();
+  } else {
+    var length = node.childNodes.length;
+    while(length--) callee.fragment.insertBefore(node.childNodes[length], callee.fragment.firstChild);
+  }
+  return callee.fragment;
+}, {
+  div: document.createElement('div'),
+  fragment: document.createDocumentFragment()
+});
 
 // Fix IE innerHTML issue with links and relative hrefs 
 Element._fixAnchorsAfterUpdate = Prototype.K;
