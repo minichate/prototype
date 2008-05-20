@@ -1046,7 +1046,7 @@ if (Prototype.Browser.IE || Prototype.Browser.Opera) {
     }
     else {
       element.innerHTML = stripped;
-      Element._fixAnchorsAfterUpdate(element, stripped);
+      Element._afterUpdateProcess(element, stripped);
     }
     
     content.evalScripts.bind(content).defer();
@@ -1092,11 +1092,11 @@ Object.extend(Element._getContentFromAnonymousElement = function(tagName, html) 
   
   if (t) {
     node.innerHTML= t[0] + html + t[1];
-    Element._fixAnchorsAfterUpdate(node, html); 
+    Element._afterUpdateProcess(node, html); 
     t[2].times(function() { node = node.firstChild });
   } else {
     node.innerHTML = html;
-    Element._fixAnchorsAfterUpdate(node, html);
+    Element._afterUpdateProcess(node, html);
   }
   
   if (node.removeNode) {
@@ -1111,17 +1111,19 @@ Object.extend(Element._getContentFromAnonymousElement = function(tagName, html) 
   fragment: document.createDocumentFragment()
 });
 
-// Fix IE innerHTML issue with links and relative hrefs 
-Element._fixAnchorsAfterUpdate = Prototype.K;
+Element._afterUpdateProcess = Prototype.K;
+
 if (Prototype.Browser.IE) {
-  (Element._fixAnchorsAfterUpdate = function(element, html) {
-    var anchors = element.getElementsByTagName('A'),
-    popDoc = arguments.callee.popup.document, popAnchors, i;
-    if (i = anchors.length) {
+  (Element._afterUpdateProcess = function(element, html) {
+  
+    // Fix innerHTML issue with links and relative hrefs
+    var length, anchors = element.getElementsByTagName('A');
+    if (length = anchors.length) {
+      var popDoc = arguments.callee.popup.document, popAnchors;
       popDoc.open().write(html);
       popDoc.close();
       popAnchors = popDoc.getElementsByTagName('A');
-      while (i) anchors[--i].href = popAnchors[i].getAttribute('href', 2);
+      while (length--) anchors[length].href = popAnchors[length].getAttribute('href', 2);
     }
   }).popup = window.createPopup();
 }
