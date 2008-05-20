@@ -78,7 +78,7 @@ Element.Methods = {
   hide: function(element) {
     element = $(element);
     var originalDisplay = element.style.display;
-    if(originalDisplay && originalDisplay != 'none')
+    if (originalDisplay && originalDisplay != 'none')
       element._originalDisplay = originalDisplay;
     element.style.display = 'none';
     return element;
@@ -86,7 +86,7 @@ Element.Methods = {
   
   show: function(element) {
     element = $(element); 
-    if(element._originalDisplay) { 
+    if (element._originalDisplay) { 
       element.style.display = element._originalDisplay; 
       element._originalDisplay = null; 
  	} else element.style.display = '';
@@ -285,7 +285,7 @@ Element.Methods = {
     if (t.names[name]) name = t.names[name];
     
     if (Prototype.Browser.IE) {
-      if(element.tagName.toUpperCase() == 'FORM' &&
+      if (element.tagName.toUpperCase() == 'FORM' &&
         !/^((child|parent)Node|(next|previous)Sibling)$/.test(name) &&
           element.children[name]){
         element = $(element.cloneNode(false));
@@ -1008,7 +1008,7 @@ else if (Prototype.Browser.WebKit) {
       (value < 0.00001) ? 0 : value;
     
     if (value == 1)
-      if(element.tagName.toUpperCase() == 'IMG' && element.width) { 
+      if (element.tagName.toUpperCase() == 'IMG' && element.width) { 
         element.width++; element.width--;
       } else try {
         var n = document.createTextNode(' ');

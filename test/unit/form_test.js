@@ -182,7 +182,7 @@ new Test.Unit.Runner({
     
     // Test IE doesn't select text on buttons
     Form.focusFirstElement('bigform');
-    if(document.selection) this.assertEqual('', getSelection(element));
+    if (document.selection) this.assertEqual('', getSelection(element));
     
     // Form.Element.activate shouldn't select text on buttons
     element = $('focus_text');
@@ -342,7 +342,7 @@ new Test.Unit.Runner({
     var button = $('button_type_button');
     button.setValue('I Changed');
     this.assertEqual('I Changed', button.getValue());
-    
+
     // text input
     var input = $('input_enabled'), oldValue = input.getValue();
     this.assertEqual(input, input.setValue('foo'), 'setValue chaining is broken');

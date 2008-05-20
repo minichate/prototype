@@ -250,7 +250,7 @@ Object.extend(Event, (function() {
     
     // Ensure window onload is fired after "dom:loaded"
     addEventDispatcher(window, 'load', function(proceed, event) {
-    	if(document.loaded){
+    	if (document.loaded){
     	  proceed(event);
     	} else {
     	  arguments.callee.defer(proceed, event);
