@@ -46,40 +46,6 @@ new Test.Unit.Runner({
     });
   },
   
-  testAbortRequest: function() {
-  
-    var callbacked = false,
-    completed = false,
-    successed = false,
-    failured  = false;
-    
-    var request = new Ajax.Request("../fixtures/hello.js", {
-      asynchronous: true,
-      method: 'get',
-      
-      onAbort: function() {
-        callbacked = true;
-      },
-      onComplete: function() {
-       completed = true;
-      },
-      onSuccess: function() {
-        successed = true;
-      },
-      onFailure: function() {
-       failured = true;
-      }
-    });
-    
-    request.abort();
-    
-    this.assertEqual(true, request.aborted);
-    this.assertEqual(true, callbacked);
-    this.assertEqual(true, completed);
-    this.assertEqual(false, successed);
-    this.assertEqual(false, failured);
-  },
-  
   testUpdater: function() {
     this.assertEqual("", $("content").innerHTML);
     

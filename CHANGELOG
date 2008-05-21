@@ -1,38 +1,48 @@
-* Add the negated attribute operator for IE in the Selector class. [jddalton]
+* Fix issue where Ajax.Request does not work with local files in IE7. (jddalton)
 
-* Make Element#cumulativeScrollOffset work with pre Opera 9.5. [jddalton]
+* Ensure Array#intersect returns correct result if intersect value is 0. (jddalton)
 
-* Make Form#serializeElements more closely follow the W3C specifications. Closes LH#85. [jddalton]
+* Preserve inline display styles when showing/hiding an element. (jddalton)
 
-* Add Ajax.Request.abort method. Stops onSuccess handlers from being called after the request is aborted. Closes #9490. [augustus.kling, jddalton]
+* Allow query parameters for any HTTP method. (jddalton)
 
-* Correct Element#viewportOffset results and make it work with Opera 9.5. Closes #11473, #10486. [jddalton, Nick Stakenburg]
+* Form.Element.getValue should return null on unknown/unsupported elements. (jddalton, tdd)
 
-* Fix IE bug in Element#getOffsetParent caused by a strict doctype and relatively positioned elements. Addresses trac #11473 and Closes LH #90. [jddalton, Nick Stakenburg]
+* Ensure Element.hide and Element.show return an element, even if you pass an element ID. (jddalton)
 
-* Make Element#relativize preserve the dimensions/coordinates of absolutely positioned elements. Closes #9168. [dmmd, jddalton, kangax]
+* Fix issue where setting type attribute for button element in Element constructor fails in IE. (jddalton, sakarit)
 
-* Make document.viewport.getDimensions() work with Opera 9.5. Closes #11302 [arty, jdalton, Matthew Leverton, Nick Stakenburg]
+* Ensure IE el.readAttribute('id') behaves properly when child element has id="id" or name="id". (jddalton) [#89 state:resolved] 
 
-* Correct how Element#clonePosition sets element dimensions. Resolves part 2 of LH#9 and Closes #. [azazel, jddalton, Nick Stakenburg]
+* Stop Form.Element.disable from stealing focus. (jddalton)
 
-* Ensure Element#getDimensions works with display:none ancestors. Resolves part 1 of LH#9. [Nick Stakenburg]
+* Ensure String#escapeHTML escapes double quotes. (jddalton)
 
-* Add Element#getNumericStyle to return style values as integers. [jddalton, kangax]
+* Fix String#escapeHTML and String#unescapeHTML to ensure more consistent output. (jddalton, Tobie Langel)
 
-* Force Element.Methods.Simulated.hasAttribute() to return a boolean value. [jddalton]
+* Fix issue with how IE wrappers.dispatcher iterates over list of wrappers. (jddalton)
 
-* Fixed IE error in the Selector class that caused matching element ids to fail when the element wasn't attached to the document. Closes #9766. [jddalton, kangax, shazam]
+* Fix String#extractScripts so that it doesn't return scripts that are commented out. (jddalton)
 
-* Force Element.extend() to skip XML nodes to avoid errors in IE, use the static Element methods instead. Closes #9709. [jddalton, yanick.rochon]
+* Fix scriptFragment Safari bug with non-ASCII characters in scripts. (jddalton)
 
-* Fixed cross sub-domain issue with responseXML in Firefox 1.5. Closes #10921. [dcpedit, jddalton, Tobie Langel]
+* Fix Element#viewportOffset and Element#getOffsetParent errors in IE and Opera. (jddalton)
 
-* Make Opera 9.2x handle the base tag with relative urls in Ajax.Request. Closes #9373. [fearphage, jddalton, xmedeko]
+* Ensure BUTTON elements are extended with Form.Element.Methods. (jddalton)
 
-* Allow Ajax query params to be used with any HTTP method. Closes #11009. [cfis, jddalton]
+* Element position methods now run the argument through $. (jddalton)
 
-* Extend Form.Elements to BUTTON elements. Closes #9708. [jddalton, mensler]
+* Make sure Event#stopObserving works when passed non-string value as an eventName. (kangax, jddalton, Andrew Dupont)
+
+* Use DOMContentLoaded in the recent versions of WebKit that support it. (jddalton, Andrew Dupont)
+
+* Many minor cleanups in event.js. (jddalton)
+
+* Clean up event.js — renaming some confusing or contradictory variable names and making consistent use of double quotes. (jddalton)
+
+* Set document.loaded = true before firing dom:loaded custom event. (jddalton)
+
+* Fix Event.stopObserving() IE error on elements with no observers. (jddalton)
 
 * Avoid potential memory leaks in Firefox. (wpc, Tobie Langel) [#12 state:resolved]
 
@@ -43,16 +53,6 @@
 * Replace all instances of foo.__proto__ by foo['__proto__'] for Caja-compliance. (Tobie Langel)
 
 * Speed up Function#argumentNames. Avoid Enum dependency. (Samuel Lebeau, Tobie Langel)
-
-* Make Element#readAttribute return consistent values, across browsers, for flag attributes. [Crash, jddalton]
-
-* Make Element#readAttribute resolve the attribute name before using it. [jddalton]
-
-* Make sure Event#stopObserving works when passed non-string value as an eventName (e.g. when using "each(Event.stopObserving)") [kangax]
-
-* Allow versions of WebKit that support DOMContentLoaded event to use it instead of setInterval(). Closes LH#64. [LaC]
-
-* Stop IE from erroring when calling Event#stopObserving on an element with no observers. [jddalton]
 
 * Fix an issue where Element#getHeight returns null if the height is set to "auto." (kangax, ylucas, jddalton)
 
@@ -66,70 +66,7 @@
 
 * For consistency, add additional optional parameter "context" to Number.prototype.times. (Samuel Lebeau)
 
-* Make Element#getStyle calculate height/width when they are set to "auto". Closes #10116. [kangax, ylucas]
-
-* Fix Element#absolutize calculating dimensions incorrectly in IE7. Closes #9918. [kangax, pphilipp]
-
-* Fix Element#writeAttribute('encType', 'multipart/form-data') on dynamically created form elements in IE. Closes #11126. [jddalton, kangax, NoiseEee]
-
-* Element#down on an input element should not raise error. Closes #11102. [humeniuc, kangax]
-
-* Form#serializeElements should not serialize file inputs. Closes #10118. [kangax, Lonesome Boy]
-
-* Remove Array#reduce to avoid conflicts with Firefox 3's native implementation. [sam]
-
-* Class constructors should return the "initialize" method's return value. Closes #11481. [cch1]
-
-* Class#addMethods reworked to include late mixin binding, augmented constructor toString,
-  correct IE toString/valueOf assignments, and separated complex logic into Class#addMethod. [kangax, Tobie Langel]
-
-* Ensure event.target is extended in IE. [jddalton]
-
-* Fix Array#inersect not returning correct result if intersected value is 0. [jddalton]
-
-* Make Form.Element.getValue/setValue return null for unknown/unsupported elements. Closes #8381. [jddalton, tdd]
-
-* Optimize by using "_each" instead of "each" where applicable. Closes #9092. [sylvainzimmer]
-
-* Preserve inline display style when using Element#show and Element#hide. Closes #3868. [anonymous, Tobie Langel]
-
-* Ensure Element#hide and Element#show return element. [jddalton]
-
-* Fix IE issue where Element#readAttribute() would return the form's child element if the element had the same id/name as the attribute. Closes #11092. [jddalton]
-
-* Fix Event#element accessing inexistent tagName property (e.g. when element is a document). [kangax]
-
-* Make Object.isNumber(new Number(n)) and Object.isString(new String(s)) return true. Closes #10595. [foca, kangax]
-
-* Stop Form.Element.Methods.disable() from bluring focused element. Closes #11214. [kangax, sjoekie]
-
-* Fix IE issue with Element#replace() removing the childNodes of the returned element. Closes #11225. [Rukawa, jddalton]
-
-* Fix IE issue where Element#update(), Element#insert(), or Element#replace would turn relative href's into absolute. Closes #11350. [elvanor, jddalton, kangax]
-
-* Make String#escapeHTML escape double quotes. Closes #10622. [kangax]
-
-* Performance improvement for IE in Element#_getContentFromAnonymouseElement. Closes #11468. [jddalton]
-
-* Fix IE issue with creating a new button element and setting it's "type" attribute. Closes #10548. [jddalton, sakarit]
-
-* Fix for IE7 to access local files via Ajax.Request. Closes #8259. [hagen.seifert, jddalton]
-
-* Only allow Ajax status 0 for requests originating from file/ftp protocols. Closes #10030. [jddalton, tbeck]
-
-* Fix several issues with String#escapeHTML and String#unescapeHTML in IE and Safari. Closes #8452. [jddalton, slusarz]
-
-* In IE, enforce first-in-first-out event order.
-  Ensure all dom:loaded observers are executed before executing window "onload" observers.
-  Stop window "onresize" from firing multiple times for one resize action. Closes #9394. [samleb, jddalton]
-
-* Set document.loaded = true before calling document.fire('dom:loaded'). Closes #11453. [choppsta, jddalton]
-
-* Fix String#extractScripts from returning commented-out scripts. Closes #9599. [bubbatls, jddalton]
-
-* Fix Prototype#scriptFragment for compatibility with Safari and scripts containing non-ASCII characters. Closes #9663. [Alexey Proskuryakov, jddalton]
-
-* Extend element argument in Element position methods. Closes #11472. [jddalton]
+* Fix Event#element accessing inexistent tagName property (e.g. when element is a document). (kangax)
 
 * Amended failing Element#identify test.
 

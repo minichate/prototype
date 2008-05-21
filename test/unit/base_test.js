@@ -222,9 +222,8 @@ new Test.Unit.Runner({
   },
   
   testObjectIsString: function() {
-    this.assert(Object.isString("a string"));
-    this.assert(Object.isString(new String("a string")));
     this.assert(!Object.isString(function() { }));
+    this.assert(Object.isString("a string"));
     this.assert(!Object.isString(0));
     this.assert(!Object.isString([]));
     this.assert(!Object.isString({}));
@@ -235,7 +234,6 @@ new Test.Unit.Runner({
   testObjectIsNumber: function() {
     this.assert(Object.isNumber(0));
     this.assert(Object.isNumber(1.0));
-    this.assert(Object.isNumber(new Number(0)));
     this.assert(!Object.isNumber(function() { }));
     this.assert(!Object.isNumber("a string"));
     this.assert(!Object.isNumber([]));
@@ -408,32 +406,6 @@ new Test.Unit.Runner({
 
     var Empty = Class.create();
     this.assert('object', typeof new Empty);
-  },
-
-  testConstructorExplicitReturn: function() {
-    var Dog = Class.create(Animal, {
-      initialize: function($super, name, id) {
-        var instance = this.constructor.AKCRegistry.get(id);
-        if (instance) return instance;
-        if (!id) return;
-        
-        //set id and cache
-        this.id = id;
-        this.constructor.AKCRegistry.set(id, this);
-      },
-      
-      setBreed: function(s) {
-        this.breed = s;
-      }
-    });
-    
-    Dog.AKCRegistry = $H();
-    
-    var dagny = new Dog('Dagny', 12345);
-    dagny.setBreed('Boston Terrier');
-    
-    var francisco = new Dog('Francisco', 12345);
-    this.assertEqual('Boston Terrier', francisco.breed, 'Cached value not returned: constructor return value is being ignored.');
   },
 
   testInheritance: function() {

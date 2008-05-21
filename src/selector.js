@@ -716,22 +716,8 @@ if (Prototype.Browser.IE) {
       for (var i = 0, node; node = nodes[i]; i++)
         node.removeAttribute('_countedByPrototype');
       return nodes;  
-    },
-    
-    // IE doesn't find elements by id if they are not attached to the document
-    id: Selector.handlers.id.wrap(function(proceed, nodes, root, id, combinator) {
-      var targetNode = $(id);
-      if (!targetNode && (root.sourceIndex < 1 || root == document)) {
-        var nodes = root.getElementsByTagName('*'), length = nodes.length;
-        while (length--) {
-          if (nodes[length].id == id) {
-            targetNode = nodes[length]; break;
-          }
-        }
-      }
-      return proceed(nodes, root, targetNode, combinator);
-    })
-  });
+    }
+  });  
 }
 
 function $$() {

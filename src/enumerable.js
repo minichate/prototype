@@ -154,7 +154,7 @@ var Enumerable = {
   
   pluck: function(property) {
     var results = [];
-    this._each(function(value) {
+    this.each(function(value) {
       results.push(value[property]);
     });
     return results;

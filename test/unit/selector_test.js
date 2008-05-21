@@ -1,7 +1,3 @@
-Array.prototype.reduce = function() {
-  return this.length > 1 ? this : this[0];
-};
-
 var $RunBenchmarks = false;
 
 new Test.Unit.Runner({
@@ -377,14 +373,5 @@ new Test.Unit.Runner({
     var b = $('dupContainer').down('#dupL4');
     
     this.assertEqual(a, b);
-  },
-  
-  testSelectorNotInsertedNodes: function() {
-    var wrapper = new Element("div");
-    wrapper.update("<table><tr><td id='myTD'></td></tr></table>");
-    new Selector('[id=myTD]').findElements(wrapper);
-    this.assertNotNullOrUndefined(wrapper.select('[id=myTD]')[0]);
-    this.assertNotNullOrUndefined(wrapper.select('td')[0]);
-    this.assertNotNullOrUndefined(wrapper.select('#myTD')[0]);
   }
 });

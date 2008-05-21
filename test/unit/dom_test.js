@@ -279,28 +279,7 @@ new Test.Unit.Runner({
     this.assert(!$('test-hide-visible').visible());
     $('test-hide-hidden').hide();
     this.assert(!$('test-hide-hidden').visible());
-    this.assertUndefined($('test-hide-visible')._originalDisplay);
   }, 
-  
-  testHideAndShowWithOtherInlineDisplayValue: function() {
-    $('test-visible-inline').hide();
-    this.assert(!$('test-visible-inline').visible());
-    this.assertEqual('inline', $('test-visible-inline')._originalDisplay);
-    $('test-visible-inline').show();
-    this.assert($('test-visible-inline').visible());
-    this.assertEqual('inline', $('test-visible-inline').style.display);
-    this.assertNull($('test-visible-inline')._originalDisplay);
-    
-    $('test-visible-inline').setStyle({display: 'block'});
-    
-    $('test-visible-inline').hide();
-    this.assert(!$('test-visible-inline').visible());
-    this.assertEqual('block', $('test-visible-inline')._originalDisplay);
-    $('test-visible-inline').show();
-    this.assert($('test-visible-inline').visible());
-    this.assertEqual('block', $('test-visible-inline').style.display);
-    this.assertNull($('test-visible-inline')._originalDisplay);      
- },
   
   testElementRemove: function(){
     $('removable').remove();
@@ -392,9 +371,8 @@ new Test.Unit.Runner({
   },
   
   testElementReplace: function() {
-    var replace1 = $('testdiv-replace-1').replace('hello from div!');
+    $('testdiv-replace-1').replace('hello from div!');
     this.assertEqual('hello from div!', $('testdiv-replace-container-1').innerHTML);
-    this.assertEqual('original text', replace1.innerHTML);
     
     $('testdiv-replace-2').replace(123);
     this.assertEqual('123', $('testdiv-replace-container-2').innerHTML);
@@ -914,7 +892,7 @@ new Test.Unit.Runner({
       this.assertEqual("17px", $('style_test_dimensions').getStyle('height'));
     }
     
-    // height/width should always be calculated if it's set to "auto" (Firefox)
+    // height/width could always be calculated if it's set to "auto" (Firefox)
     this.assertNotNull($('auto_dimensions').getStyle('height'));
     this.assertNotNull($('auto_dimensions').getStyle('width'));
   },
@@ -923,18 +901,12 @@ new Test.Unit.Runner({
     this.assertEqual(0.45, $('op1').setOpacity(0.45).getOpacity());
   },
   
-  testElementGetNumericStyle: function() {
-    this.assertIdentical(11, Element.getNumericStyle('style_test_2', 'font-size'));
-    this.assertIdentical(1,  Element.getNumericStyle('style_test_2', 'margin-left'));
-    this.assertIdentical(0,  Element.getNumericStyle(document.body, 'border-left-width'));
-  },
-  
   testElementReadAttribute: function() {
     var attribFormIssues = $('attributes_with_issues_form');
- 	this.assertEqual('blah-class', attribFormIssues.readAttribute('class'));
- 	this.assertEqual('post', attribFormIssues.readAttribute('method'));
- 	this.assertEqual('string', typeof(attribFormIssues.readAttribute('action')));
- 	this.assertEqual('string', typeof(attribFormIssues.readAttribute('id')));
+ 	  this.assertEqual('blah-class', attribFormIssues.readAttribute('class'));
+ 	  this.assertEqual('post', attribFormIssues.readAttribute('method'));
+ 	  this.assertEqual('string', typeof(attribFormIssues.readAttribute('action')));
+ 	  this.assertEqual('string', typeof(attribFormIssues.readAttribute('id')));
     
     $(document.body).insert('<div id="ie_href_test_div"></div>'); 
     $('ie_href_test_div').insert('<p>blah blah</p><a id="ie_href_test" href="test.html">blah</a>'); 
@@ -1185,30 +1157,7 @@ new Test.Unit.Runner({
       this.assertIdentical(100, $('getDimensionsBox'+num).down('.deepest').getDimensions().width);
     }, this);
   },
-  
-  testElementClonePosition: function() {
-  
-    var position, target, left = 558, top = 8;
-    
-    target = $('clonePositionTarget').clonePosition('clonePositionSource', {
-      offsetTop: 20,
-      offsetLeft: 30
-    });
-    
-    position = target.cumulativeOffset();
-    this.assertIdentical(top  + 20 - 2, position.top);
-    this.assertIdentical(left + 30 - 2, position.left);
-    
-    target = $('clonePositionTarget').clonePosition('clonePositionSource');
-    position = target.cumulativeOffset();
-    dimensions = target.getDimensions();
-    
-    this.assertIdentical(top, position.top);
-    this.assertIdentical(left, position.left);
-    this.assertIdentical(20, dimensions.height);
-    this.assertIdentical(30, dimensions.width);
-  },
-  
+      
   testDOMAttributesHavePrecedenceOverExtendedElementMethods: function() {
     this.assertNothingRaised(function() { $('dom_attribute_precedence').down('form') });
     this.assertEqual($('dom_attribute_precedence').down('input'), $('dom_attribute_precedence').down('form').update);
@@ -1374,10 +1323,6 @@ new Test.Unit.Runner({
     this.assertEqual('absolute_relative', $('absolute_relative_undefined').getOffsetParent().id);
     
     this.assertEqual(document.body, new Element('div').getOffsetParent());
-    
-    /* IE with strict doctype may try to return documentElement as offsetParent on relatively positioned elements */  
-    $(document.body).insert( new Element('div', {id:'ie_offset_parent_bug'}).setStyle('position:relative'));  
-    this.assertEqual('BODY', $('ie_offset_parent_bug').getOffsetParent().tagName.toUpperCase());  
   },
 
   testAbsolutize: function() {
