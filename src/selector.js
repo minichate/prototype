@@ -455,12 +455,24 @@ Object.extend(Selector, {
         for (var i = 0, node; node = nodes[i]; i++)
           if (node.tagName.toUpperCase() === uTagName) results.push(node);
         return results;
-      } else return root.getElementsByTagName(tagName);
+      } else return $A(root.getElementsByTagName(tagName));
     },
     
     id: function(nodes, root, id, combinator) {
       var targetNode = $(id), h = Selector.handlers;
-      if (!targetNode) return [];
+      if (!targetNode) {
+      	// IE doesn't find elements by id if they are not attached to the document
+      	if(Prototype.Browser.IE && (root.sourceIndex < 1 || root == document)) {
+          var nodes = root.getElementsByTagName('*'), length = nodes.length;
+          while (length--) {
+            if (nodes[length].id == id) {
+              targetNode = nodes[length]; break;
+            }
+          }
+        }
+        if (!targetNode) return [];
+      }
+      
       if (!nodes && root == document) return [targetNode];
       if (nodes) {
         if (combinator) {
