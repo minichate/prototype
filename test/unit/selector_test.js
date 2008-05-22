@@ -11,6 +11,9 @@ new Test.Unit.Runner({
       return node.tagName !== '!';
     });      
     this.assertEnumEqual(allNodes, $$('*'));
+    
+    // Test IE issue with elements whos ID is the same name as nodeList properties
+    this.assertEqual(3, $('ie_nodelist_issues').select('div').length);
   },
   
   testSelectorWithId: function() {

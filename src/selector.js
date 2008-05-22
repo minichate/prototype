@@ -386,8 +386,8 @@ Object.extend(Selector, {
     unique: function(nodes) {
       if (nodes.length == 0) return nodes;
       var results = [], n;
-      for (var i = 0, l = nodes.length; i < l; i++)
-        if (!(n = nodes[i])._countedByPrototype) {
+      for (var i = 0, n; n = nodes[i]; i++)
+        if (!n._countedByPrototype) {
           n._countedByPrototype = Prototype.emptyFunction;
           results.push(Element.extend(n));
         }
@@ -463,10 +463,10 @@ Object.extend(Selector, {
       if (!targetNode) {
       	// IE doesn't find elements by id if they are not attached to the document
       	if(Prototype.Browser.IE && (root.sourceIndex < 1 || root == document)) {
-          var nodes = root.getElementsByTagName('*'), length = nodes.length;
-          while (length--) {
-            if (nodes[length].id == id) {
-              targetNode = nodes[length]; break;
+          var nodes = root.getElementsByTagName('*');
+          for(var i = 0, n; n = nodes[i]; i++) {
+            if (n.id == id) {
+              targetNode = n; break;
             }
           }
           if (!targetNode) return [];
