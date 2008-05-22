@@ -1,3 +1,5 @@
+* Fix IE issue with Element#replace() removing the childNodes of the returned element. Closes #11225. [Rukawa, jddalton]
+
 * Ensure Element#getStyle returns values in px unit, regardless of how they are set. [Andrew Dupont, jddalton]
 
 * Fixed IE error in the Selector class that caused matching element ids to fail when the element wasn't attached to the document. Closes #9766. [jddalton, kangax, shazam]
