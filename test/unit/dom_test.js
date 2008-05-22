@@ -649,6 +649,19 @@ new Test.Unit.Runner({
       this.assertEqual(textnode, Element.extend(textnode));
       this.assert(typeof textnode['show'] == 'undefined');
     }, this);
+    
+    // Don' extend XML documents
+    var xmlDoc, text = "<note><to>Sam</to></note>";
+    try {
+      (xmlDoc = new ActiveXObject("Microsoft.XMLDOM")).async = "false";
+      xmlDoc.loadXML(text);
+    } catch(e) {
+      try {
+         xmlDoc = (new DOMParser()).parseFromString(text, "text/xml");
+      } catch(e) { }
+    }
+    Element.extend(xmlDoc.firstChild);
+    this.assertUndefined(xmlDoc.firstChild._extendedByPrototype);
   },
   
   testElementExtendReextendsDiscardedNodes: function() {
