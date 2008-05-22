@@ -200,7 +200,6 @@ new Test.Unit.Runner({
     this.assert(!Object.isHash(false));
     this.assert(!Object.isHash(true));
     this.assert(!Object.isHash([]));
-    this.assert(!Object.isHash(undefined_var));
   },
   
   testObjectIsElement: function() {
@@ -235,8 +234,6 @@ new Test.Unit.Runner({
   testObjectIsNumber: function() {
     this.assert(Object.isNumber(0));
     this.assert(Object.isNumber(1.0));
-    this.assert(!Object.isNumber(2.5E+345));
-    this.assert(!Object.isNumber(0/0));
     this.assert(!Object.isNumber(function() { }));
     this.assert(!Object.isNumber("a string"));
     this.assert(!Object.isNumber([]));

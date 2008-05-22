@@ -287,6 +287,7 @@ Element.Methods = {
     if (t.names[name]) name = t.names[name];
     
     if (Prototype.Browser.IE) {
+      var t = Element._attributeTranslations.read;
       // If we're reading from a form, avoid a conflict between an attribute
       // and a child name.
       if (element.tagName.toUpperCase() == 'FORM' &&
@@ -295,6 +296,7 @@ Element.Methods = {
         element = $(element.cloneNode(false));
       }
       if (t.values[name]) return t.values[name](element, name);
+      if (t.names[name]) name = t.names[name];
       if (name.include(':')) {
         return (!element.attributes || !element.attributes[name]) ? null : 
          element.attributes[name].value;
@@ -397,7 +399,7 @@ Element.Methods = {
   
   scrollTo: function(element) {
     element = $(element);
-    var pos = Element.cumulativeOffset(element);
+    var pos = element.cumulativeOffset();
     window.scrollTo(pos[0], pos[1]);
     return element;
   },
@@ -406,7 +408,7 @@ Element.Methods = {
     element = $(element);
     style = style == 'float' ? 'cssFloat' : style.camelize();
     var value = element.style[style];
-    if (document.defaultView && document.defaultView.getComputedStyle) {
+    if (!value || value == 'auto') {
       var css = document.defaultView.getComputedStyle(element, null);
       value = css ? css[style] : null;
     }
@@ -445,65 +447,25 @@ Element.Methods = {
   
   getDimensions: function(element) {
     element = $(element);
+    var display = element.getStyle('display');
+    if (display != 'none' && display != null) // Safari bug
+      return {width: element.offsetWidth, height: element.offsetHeight};
     
-    // The style object is inaccessible in Safari <= 2.0 when the element
-    // is hidden.
-    var display = Element.getStyle(element, 'display'),
-    isNotShown = display == "none" || display === null || element.clientWidth == 0 || element.clientHeight == 0,
-    hasHiddenAncestor = false,
-    noOffsetWidth;
-    
-    // If the element is hidden, we show it for an instant
-    // to grab its dimensions.
-    if (isNotShown) {
-      var restore = [], styles = [],
-      setTempStyle = function(c) {
-        restore.push(c);
-        styles.push({
-          display: c.getStyle('display'),
-          position: c.getStyle('position'),
-          visibility: c.getStyle('visibility')
-        });
-        Element.setStyle(c, 'display:block;visibility:visible;position:absolute;');
-      };
-      
-      // If, after showing the element, it still has an offsetHeight of 0,
-      // we assume one of its ancestors is hidden.
-      setTempStyle(element);
-      
-      if (element.offsetHeight == 0) {
-        element.ancestors().each(function(ancestor) {
-          if (ancestor !== element && Element.visible(ancestor)) return;
-          setTempStyle(ancestor);
-        });
-      }
-    }
-    
-    // clientWidth includes margin offsets of a table in Mozilla,
-    // set offsets to 0, get width value, then revert back
-    if (element.tagName.toUpperCase() == 'TABLE') {
-      var originalLeft = element.style.marginLeft;
-      var originalRight = element.style.marginRight;
-      element.style.marginLeft = '0px';
-      element.style.marginRight = '0px';
-      noOffsetWidth = element.clientWidth;
-      element.style.marginLeft = originalLeft;
-      element.style.marginRight = originalRight;
-    }
-    
-    var dimensions = {
-      width:  noOffsetWidth || element.clientWidth,
-      height: element.clientHeight
-    };
-    
-    // If we altered the element's styles, return them to their
-    // original values.
-    if (isNotShown) {
-      var length = restore.length;
-      while (length--) restore[length].setStyle(styles[length]);
-    }
-    
-    return dimensions;
+    // All *Width and *Height properties give 0 on elements with display none,
+    // so enable the element temporarily
+    var els = element.style;
+    var originalVisibility = els.visibility;
+    var originalPosition = els.position;
+    var originalDisplay = els.display;
+    els.visibility = 'hidden';
+    els.position = 'absolute';
+    els.display = 'block';
+    var originalWidth = element.clientWidth;
+    var originalHeight = element.clientHeight;
+    els.display = originalDisplay;
+    els.position = originalPosition;
+    els.visibility = originalVisibility;
+    return {width: originalWidth, height: originalHeight};    
   },
   
   makePositioned: function(element) {
@@ -552,40 +514,67 @@ Element.Methods = {
     return element;
   },
 
+  cumulativeOffset: function(element) {
+    element = $(element);
+    var valueT = 0, valueL = 0;
+    do {
+      valueT += element.offsetTop  || 0;
+      valueL += element.offsetLeft || 0;
+      element = element.offsetParent;
+    } while (element);
+    return Element._returnOffset(valueL, valueT);
+  },
+
+  positionedOffset: function(element) {
+    element = $(element);
+    var valueT = 0, valueL = 0;
+    do {
+      valueT += element.offsetTop  || 0;
+      valueL += element.offsetLeft || 0;
+      element = element.offsetParent;
+      if (element) {
+        if (element.tagName.toUpperCase() == 'BODY') break;
+        var p = Element.getStyle(element, 'position');
+        if (p !== 'static') break;
+      }
+    } while (element);
+    return Element._returnOffset(valueL, valueT);
+  },
+
   absolutize: function(element) {
     element = $(element);
-    if (Element.getStyle(element, 'position') == 'absolute') return element;
+    if (element.getStyle('position') == 'absolute') return element;
+    // Position.prepare(); // To be done manually by Scripty when it needs it.
 
-    var offsets = Element.positionedOffset(element),
-    dimensions = Element.getDimensions(element),
-    top = offsets.top,
-    left = offsets.left,
+    var offsets = element.positionedOffset(),
+    dimensions = element.getDimensions(),
+    top = offsets[1],
+    left = offsets[0],
     width = dimensions.width,
     height = dimensions.height;
 
     Object.extend(element, {
-      _originalTop:        top  - parseFloat(Element.getStyle(element, 'top')  || 0),
-      _originalLeft:       left - parseFloat(Element.getStyle(element, 'left') || 0),
-      _originalWidth:      Element.getStyle(element, 'width'),
-      _originalHeight:     Element.getStyle(element, 'height'),
-      _originalMarginTop:  Element.getStyle(element, 'marginTop'),
-      _originalMarginLeft: Element.getStyle(element, 'marginLeft')
+      _originalLeft:   left - parseFloat(element.style.left  || 0),
+      _originalTop:    top  - parseFloat(element.style.top || 0),
+      _originalWidth:  element.style.width,
+      _originalHeight: element.style.height
     });
 
-    return Element.setStyle(element, {
-      position:   'absolute',
-      top:        top + 'px',
-      left:       left + 'px',
-      width:      width + 'px',
-      height:     height + 'px',
-      marginTop:  '0px',
-      marginLeft: '0px'
+    element.setStyle({
+      position: 'absolute',
+      top:      top + 'px',
+      left:     left + 'px',
+      width:    width + 'px',
+      height:   height + 'px'
     });
+    
+    return element;
   },
 
   relativize: function(element) {
     element = $(element);
-    if (Element.getStyle(element, 'position') == 'relative') return element;
+    if (element.getStyle('position') == 'relative') return element;
+    // Position.prepare(); // To be done manually by Scripty when it needs it.
 
     if(!element._originalTop){
       /* fix bizarre IE position issue with empty elements */
@@ -593,186 +582,120 @@ Element.Methods = {
       if(isBuggy) element.innerHTML = '\x00';
       
       Object.extend(element, {
-        _originalTop:        element.offsetTop,
-        _originalLeft:       element.offsetLeft,
-        _originalWidth:      Element.getStyle(element, 'width'),
-        _originalHeight:     Element.getStyle(element, 'height'),
-        _originalMarginTop:  Element.getStyle(element, 'marginTop'),
-        _originalMarginLeft: Element.getStyle(element, 'marginLeft')
+        _originalTop:    element.offsetTop,
+        _originalLeft:   element.offsetLeft,
+        _originalWidth:  element.clientWidth  + 'px',
+        _originalHeight: element.clientHeight + 'px'
       });
       
       if(isBuggy) element.innerHTML = '';
     }
 
-    Element.setStyle(element, {
-      position:   'relative',
-      width:      element._originalWidth,
-      height:     element._originalHeight,
-      marginTop:  element._originalMarginTop,
-      marginLeft: element._originalMarginLeft
-    });
-
-    var offsets = Element.positionedOffset(element),
+    element.style.position = 'relative';
+    
+    var offsets = element.positionedOffset(),
     top  = element._originalTop  - offsets.top,
     left = element._originalLeft - offsets.left;
-
+    
     var isAuto = /^(auto|)$/;  
     if(!isAuto.test(element.style.top))  top += element._originalTop;
     if(!isAuto.test(element.style.left)) left+= element._originalLeft;
-
-    return Element.setStyle(element, {
-      top:  top  + 'px',
-      left: left + 'px'
-    });
+    
+    element.style.top    = top  + 'px';
+    element.style.left   = left + 'px';
+    element.style.height = element._originalHeight;
+    element.style.width  = element._originalWidth;
+    return element;
   },
 
+  cumulativeScrollOffset: function(element) {
+    element = $(element);
+    var valueT = 0, valueL = 0,
+    endElement = (Prototype.Browser.Opera && opera.version() < 9.5) ? document.documentElement : document;
+    
+    do {
+      valueT += element.scrollTop  || 0;
+      valueL += element.scrollLeft || 0;
+    } while ((element = element.parentNode) && element != endElement);
+    
+    return Element._returnOffset(valueL, valueT);
+  },
+  
   getOffsetParent: function(element) {
   	element = $(element);
-    var op = element.offsetParent, docElement = document.documentElement;
-    if (op && op != docElement) return $(op);
+    var op = element.offsetParent;
+    if (op && op != document.documentElement) return $(op);
 
-    while ((element = element.parentNode) && element != docElement && element != document)
+    while ((element = element.parentNode) && element.tagName.toUpperCase() != 'HTML')
       if (Element.getStyle(element, 'position') != 'static')
         return $(element);
 
     return $(document.body);
+  },
+
+  viewportOffset: function(forElement) {
+    forElement = $(forElement);
+
+    var element = forElement, valueT = 0, valueL = 0,
+    endElement = (Prototype.Browser.Opera && opera.version() < 9.5) ? document.documentElement : document;
+    
+    do {
+      valueT += element.offsetTop  || 0;
+      valueL += element.offsetLeft || 0;
+    } while ((element = element.getOffsetParent()) != document.body);
+
+    element = forElement;
+    
+    if (Element.getStyle(element, 'position') != 'fixed') {
+      while ((element = element.parentNode) && element != endElement) {
+        if (Element.getStyle(element, 'position') == 'fixed') break;
+        valueT -= element.scrollTop  || 0;
+        valueL -= element.scrollLeft || 0;
+      }
+    }
+    
+    return Element._returnOffset(valueL, valueT);
+  },
+
+  clonePosition: function(element, source) {
+    element = $(element);
+    var options = Object.extend({
+      setLeft:    true,
+      setTop:     true,
+      setWidth:   true,
+      setHeight:  true,
+      offsetTop:  0,
+      offsetLeft: 0
+    }, arguments[2] || { });
+
+    // find page position of source
+    source = $(source);
+    var p = source.viewportOffset();
+
+    // find coordinate system to use
+    var delta = [0, 0];
+    var parent = null;
+    // delta [0,0] will do fine with position: fixed elements, 
+    // position:absolute needs offsetParent deltas
+    if (Element.getStyle(element, 'position') == 'absolute') {
+      parent = element.getOffsetParent();
+      delta = parent.viewportOffset();
+    }
+
+    // correct by body offsets (fixes Safari)
+    if (parent == document.body) {
+      delta[0] -= document.body.offsetLeft;
+      delta[1] -= document.body.offsetTop; 
+    }
+
+    // set position
+    if (options.setLeft)   element.style.left  = (p[0] - delta[0] + options.offsetLeft) + 'px';
+    if (options.setTop)    element.style.top   = (p[1] - delta[1] + options.offsetTop) + 'px';
+    if (options.setWidth)  element.style.width = source.offsetWidth + 'px';
+    if (options.setHeight) element.style.height = source.offsetHeight + 'px';
+    return element;
   }
 };
-
-(function() {
-  function getNumericStyle(element, style) {
-    return parseFloat(Element.getStyle(element, style)) || 0;
-  }
-
-  function getStyleDiff(element, source, style) {
-    return getNumericStyle(source, style) - getNumericStyle(element, style);
-  }
-
-  function cloneDimension(element, source, dimension) {
-    var d = Element.getDimensions(source), style = { };
-    style[dimension] = d[dimension] + 'px';
-    $w('margin padding').each(function(name) {
-      $w( dimension == 'height' ? 'top bottom' : 'left right' ).each(function(position) {
-         var property = name + position.capitalize();
-         style[property] = (getNumericStyle(element, property) + getStyleDiff(element, source, property)) + 'px';
-      })
-    })
-    Element.setStyle(element, style);
-  }
-
-  Object.extend(Element.Methods, {
-    cumulativeScrollOffset: function(element) {
-      element = $(element);
-      var valueT = 0, valueL = 0, endElement = document;
-
-      if (Prototype.Browser.Opera && opera.version() < 9.5 &&
-         element != document.body && element != document.documentElement)
-        endElement = document.documentElement;                                              
-
-      if (Element.getStyle(element, 'position') != 'fixed') {
-        while ((element = element.parentNode) && element != endElement) {
-          if (Element.getStyle(element, 'position') == 'fixed') break;
-          valueT += element.scrollTop  || 0;
-          valueL += element.scrollLeft || 0;
-        }
-      }
-      return Element._returnOffset(valueL, valueT);
-    },
-
-    cumulativeOffset: function(element) {
-      element = $(element);
-      var valueT = 0, valueL = 0;
-      do {
-        valueT += (element.offsetTop  || 0);
-        valueL += (element.offsetLeft || 0);
-      } while ((element = Element.getOffsetParent(element)) != document.body);
-
-      return Element._returnOffset(valueL, valueT);
-    },
-
-    positionedOffset: function(element) {
-      element = $(element);
-      var valueT = 0, valueL = 0;
-      do {
-        valueT += (element.offsetTop  || 0);
-        valueL += (element.offsetLeft || 0);
-        element = Element.getOffsetParent(element);
-      } while (element != document.body && Element.getStyle(element, 'position') == 'static');
-
-      return Element._returnOffset(valueL, valueT);
-    },
-  
-    viewportOffset: function(forElement) {
-      forElement = $(forElement);
-      var op, element = forElement, valueT = 0, valueL = 0;
-      
-      do {
-        valueT += (element.offsetTop  || 0);
-        valueL += (element.offsetLeft || 0);
-
-        // Safari fix
-        op = Element.getOffsetParent(element);
-        if (op == document.body &&
-          Element.getStyle(element, 'position') == 'absolute') break;
-      } while ((element = op) != document.body);
-
-      var scrollOffset = Element.cumulativeScrollOffset(element);
-      valueT -= scrollOffset.top;
-      valueL -= scrollOffset.left;
-      
-      return Element._returnOffset(valueL, valueT);
-    },
-
-    clonePosition: function(element, source) {
-      element = $(element);
-      source = $(source);
-      var options = Object.extend({
-        setLeft:    true,
-        setTop:     true,
-        setWidth:   true,
-        setHeight:  true,
-        offsetTop:  0,
-        offsetLeft: 0
-      }, arguments[2] || { });
-
-      // find coordinate system to use
-      // delta [0,0] will do fine with position: fixed elements, 
-      // position:absolute needs offsetParent deltas
-      var parent, delta = [0, 0];
-      if (Element.getStyle(element, 'position') == 'absolute') {
-        parent = Element.getOffsetParent(element);
-        delta = Element.viewportOffset(parent);
-      }
-
-      // correct by body offsets (fixes Safari)
-      if (parent == document.body) {
-        delta[0] -= document.body.offsetLeft;
-        delta[1] -= document.body.offsetTop; 
-      }
-
-      // set dimensions
-      if (options.setWidth)  cloneDimension(element, source, 'width');
-      if (options.setHeight) cloneDimension(element, source, 'height');
-
-      // find page position of source
-      var p = Element.viewportOffset(source),
-      borderOffset = ['borderLeftWidth','borderTopWidth'].map(function(style){ return getStyleDiff(element, source, style) });
-
-      if (options.setLeft) {
-        var left = p[0] - delta[0] + borderOffset[0];
-        if (options.offsetLeft) left += options.offsetLeft + getNumericStyle(element, 'paddingLeft');
-        element.style.left = left + 'px';
-      }
-      if (options.setTop) {
-        var top = p[1] - delta[1] + borderOffset[1];
-        if (options.offsetTop) top += options.offsetTop + getNumericStyle(element, 'paddingTop');
-        element.style.top = top + 'px';
-      }
-
-      return element;
-    }
-  })
-})();
 
 Element.Methods.identify.counter = 1;
 
@@ -861,13 +784,11 @@ else if (Prototype.Browser.IE) {
       // IE throws an error if element is not in document
       try { element.offsetParent }
       catch(e) { return $(document.body) }
-      
-      var position = Element.getStyle(element, 'position');
-      if (position != 'static') return proceed(element);
-      Element.setStyle(element, { position: 'relative' });
-      
+      var position = element.getStyle('position');
+      if (position !== 'static') return proceed(element);
+      element.setStyle({ position: 'relative' });
       var value = proceed(element);
-      Element.setStyle(element, { position: position });
+      element.setStyle({ position: position });
       return value;
     }
   );
@@ -876,23 +797,31 @@ else if (Prototype.Browser.IE) {
     Element.Methods[method] = Element.Methods[method].wrap(
       function(proceed, element) {
         element = $(element);
-        var position = Element.getStyle(element, 'position');
-        if (position != 'static')
-          return proceed(element);
-        
+        try { element.offsetParent }
+        catch(e) { return Element._returnOffset(0,0) }
+        var position = element.getStyle('position');
+        if (position !== 'static') return proceed(element);
         // Trigger hasLayout on the offset parent so that IE6 reports
         // accurate offsetTop and offsetLeft values for position: fixed.
-        var offsetParent = Element.getOffsetParent(element), style = { position: 'relative' };
-        if (Element.getStyle(offsetParent, 'position') == 'fixed') style.zoom = 1;
-        
-        Element.setStyle(element, style);
+        var offsetParent = element.getOffsetParent();
+        if (offsetParent && offsetParent.getStyle('position') === 'fixed')
+          offsetParent.setStyle({ zoom: 1 });
+        element.setStyle({ position: 'relative' });
         var value = proceed(element);
-        Element.setStyle(element, { position: position });
+        element.setStyle({ position: position });
         return value;
       }
     );
   });
   
+  Element.Methods.cumulativeOffset = Element.Methods.cumulativeOffset.wrap(
+    function(proceed, element) {
+      try { $(element).offsetParent }
+      catch(e) { return Element._returnOffset(0,0) }
+      return proceed(element);
+    }
+  );
+    
   Element.Methods.getStyle = function(element, style) {
     element = $(element);
     style = (style == 'float' || style == 'cssFloat') ? 'styleFloat' : style.camelize();
@@ -910,21 +839,6 @@ else if (Prototype.Browser.IE) {
         return element['offset' + style.capitalize()] + 'px';
       return null;
     }
-    
-    // If the unit is something other than a pixel (em, pt, %), set it on
-    // something we can grab a pixel value from.
-    // Hack by Dean Edwards:
-    // http://erik.eae.net/archives/2007/07/27/18.54.15/#comment-102291
-    if (/^\d+(?!px)(%|[a-z]{2})$/i.test(value)) {
-      var style = element.style.left, runtimeStyle = element.runtimeStyle.left;
-      element.runtimeStyle.left = element.currentStyle.left;
-      element.style.left = value;
-      value = element.style.pixelLeft + 'px';
-      // revert changes
-      element.style.left = style;
-      element.runtimeStyle.left = runtimeStyle;
-    }
-    
     return value;
   };
   
@@ -938,7 +852,7 @@ else if (Prototype.Browser.IE) {
       (!currentStyle && element.style.zoom == 'normal'))
         element.style.zoom = 1;
     
-    var filter = Element.getStyle(element, 'filter'), style = element.style;
+    var filter = element.getStyle('filter'), style = element.style;
     if (value == 1 || value === '') {
       (filter = stripAlpha(filter)) ?
         style.filter = filter : style.removeAttribute('filter');
@@ -1086,10 +1000,11 @@ else if (Prototype.Browser.WebKit) {
     do {
       valueT += element.offsetTop  || 0;
       valueL += element.offsetLeft || 0;
-      if (element.offsetParent == document.body &&
-        Element.getStyle(element, 'position') == 'absolute') break;
-      
-    } while (element = element.offsetParent);
+      if (element.offsetParent == document.body)
+        if (Element.getStyle(element, 'position') == 'absolute') break;
+        
+      element = element.offsetParent;
+    } while (element);
     
     return Element._returnOffset(valueL, valueT);
   };
@@ -1131,8 +1046,7 @@ if ('outerHTML' in document.createElement('div')) {
     content = Object.toHTML(content);
     var parent = element.parentNode, tagName = parent.tagName.toUpperCase();
     
-    /* Avoid outerHTML for IE because it incorrectly removes the replaced elements childNodes */
-    if (Element._insertionTranslations.tags[tagName] || Prototype.Browser.IE) {
+    if (Element._insertionTranslations.tags[tagName]) {
       var nextSibling = element.next();
       var fragments = Element._getContentFromAnonymousElement(tagName, content.stripScripts());
       parent.removeChild(element);
@@ -1221,8 +1135,7 @@ Element.extend = (function() {
   
   var extend = Object.extend(function(element) {
     if (!element || element._extendedByPrototype || 
-        element.nodeType != 1 || element == window ||
-          !(element.ownerDocument || element).body) return element;
+        element.nodeType != 1 || element == window) return element;
 
     var methods = Object.clone(Methods),
       tagName = element.tagName.toUpperCase(), property, value;
