@@ -892,9 +892,15 @@ new Test.Unit.Runner({
       this.assertEqual("17px", $('style_test_dimensions').getStyle('height'));
     }
     
-    // height/width could always be calculated if it's set to "auto" (Firefox)
+    // height/width should always be calculated if it's set to "auto" (Firefox)
     this.assertNotNull($('auto_dimensions').getStyle('height'));
     this.assertNotNull($('auto_dimensions').getStyle('width'));
+    
+    // check to see if other units convert to px
+    var backup = $('style_test_1').getStyle('height');
+    $('style_test_1').show().setStyle({height: '2cm'});
+    this.assertEqual(76, Math.round(parseFloat( $('style_test_1').getStyle('height') )));
+    $('style_test_1').setStyle({height: backup});
   },
   
   testElementGetOpacity: function() {

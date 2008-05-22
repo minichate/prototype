@@ -1,3 +1,5 @@
+* Ensure Element#getStyle returns values in px unit, regardless of how they are set. [Andrew Dupont, jddalton]
+
 * Fixed IE error in the Selector class that caused matching element ids to fail when the element wasn't attached to the document. Closes #9766. [jddalton, kangax, shazam]
 
 * Ensure tagName selectors return an array and not a nodeList. [jddalton]

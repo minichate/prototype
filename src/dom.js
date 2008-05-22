@@ -406,7 +406,7 @@ Element.Methods = {
     element = $(element);
     style = style == 'float' ? 'cssFloat' : style.camelize();
     var value = element.style[style];
-    if (!value || value == 'auto') {
+    if (document.defaultView && document.defaultView.getComputedStyle) {
       var css = document.defaultView.getComputedStyle(element, null);
       value = css ? css[style] : null;
     }
@@ -837,6 +837,21 @@ else if (Prototype.Browser.IE) {
         return element['offset' + style.capitalize()] + 'px';
       return null;
     }
+    
+    // If the unit is something other than a pixel (em, pt, %), set it on
+    // something we can grab a pixel value from.
+    // Hack by Dean Edwards:
+    // http://erik.eae.net/archives/2007/07/27/18.54.15/#comment-102291
+    if (/^\d+(?!px)(%|[a-z]{2})$/i.test(value)) {
+      var style = element.style.left, runtimeStyle = element.runtimeStyle.left;
+      element.runtimeStyle.left = element.currentStyle.left;
+      element.style.left = value;
+      value = element.style.pixelLeft + 'px';
+      // revert changes
+      element.style.left = style;
+      element.runtimeStyle.left = runtimeStyle;
+    }
+    
     return value;
   };
   
