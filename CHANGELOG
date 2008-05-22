@@ -1,4 +1,6 @@
-* Make Object.isNumber return false for NaN -infinity and +infinity. Closes #10595. [foca, kangax]
+* Ensure tagName selectors return an array and not a nodeList. [jddalton]
+
+* Make Object.isNumber return false for NaN, -infinity, and +infinity. Closes #10595. [foca, kangax]
 
 * Fix Object.isHash throwing error when passed undefined variable in IE. [Viktor Kojouharov, jddalton]
 
