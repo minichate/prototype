@@ -6,27 +6,6 @@ function $A(iterable) {
   return results;
 }
 
-// Fix browsers that reference element id's as properties of the nodeList
-(function() {
-  var div = document.createElement('div');
-  div.appendChild(div.cloneNode(false)).id = 'length';
-  if (typeof div.getElementsByTagName('div').length != 'object') return;
-  $A = function(iterable) {
-    if (!iterable) return [];
-    if (iterable.toArray) return iterable.toArray();
-    var length = iterable.length || 0;
-    if (typeof length == 'object' && length.id == 'length') {
-      var item = length;
-      item.id  = null;
-      length   = iterable.length;
-      item.id  = 'length';
-    }
-    var results = new Array(length);
-    while (length--) results[length] = iterable[length];
-    return results;
-  };
-})();
-
 if (Prototype.Browser.WebKit) {
   $A = function(iterable) {
     if (!iterable) return [];

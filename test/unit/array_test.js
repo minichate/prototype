@@ -31,9 +31,6 @@ new Test.Unit.Runner({
     element = document.createElement('div');
     $(element).update('22<span></span><span></span');
     this.assertEqual(3, $A(element.childNodes).length);
-    
-    // Test IE issue with elements whos ID is the same name as nodeList properties
-    this.assertEqual(3, $A($('ie_nodelist_issues').getElementsByTagName('div')).length);
   },
   
   testClear: function(){

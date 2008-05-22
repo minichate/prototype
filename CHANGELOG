@@ -1,5 +1,3 @@
-* Fix IE issue with Selector class and $A when working with nodeLists that contain an element ID that matches a property name. [#60 state:resolved] [Domini, jddalton]
-
 * Make Form#serializeElements more closely follow the W3C specifications. [#85 state:resolved] [jddalton]
 
 * Make Element#viewportOffset return correct values for "fixed" positioned elements. Closes #10869. [kangax, watersco]
