@@ -1,3 +1,5 @@
+* Fixed IE error in the Selector class that caused matching element ids to fail when the element wasn't attached to the document. Closes #9766. [jddalton, kangax, shazam]
+
 * Ensure tagName selectors return an array and not a nodeList. [jddalton]
 
 * Make Object.isNumber return false for NaN, -infinity, and +infinity. Closes #10595. [foca, kangax]

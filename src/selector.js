@@ -460,7 +460,20 @@ Object.extend(Selector, {
     
     id: function(nodes, root, id, combinator) {
       var targetNode = $(id), h = Selector.handlers;
-      if (!targetNode) return [];
+      if (!targetNode) {
+      	// IE doesn't find elements by id if they are not attached to the document
+      	if(Prototype.Browser.IE && (root.sourceIndex < 1 || root == document)) {
+          var nodes = root.getElementsByTagName('*'), length = nodes.length;
+          while (length--) {
+            if (nodes[length].id == id) {
+              targetNode = nodes[length]; break;
+            }
+          }
+          if (!targetNode) return [];
+        }
+        else return [];
+      }
+      
       if (!nodes && root == document) return [targetNode];
       if (nodes) {
         if (combinator) {
