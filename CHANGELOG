@@ -1,3 +1,5 @@
+* Make Form#serializeElements more closely follow the W3C specifications. [#85 state:resolved] [jddalton]
+
 * Make Element#viewportOffset return correct values for "fixed" positioned elements. Closes #10869. [kangax, watersco]
 
 * Fix Element#viewportOffset from incorrectly adding the element's scroll position. Closes #7314. [jddalton, nrlz]
