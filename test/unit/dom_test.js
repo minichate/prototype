@@ -1342,7 +1342,12 @@ new Test.Unit.Runner({
     this.assertEqual('absolute_relative', $('inline').getOffsetParent().id);
     this.assertEqual('absolute_relative', $('absolute_relative_undefined').getOffsetParent().id);
     
+    this.assertEqual(document.body, $(document.documentElement).getOffsetParent());
     this.assertEqual(document.body, new Element('div').getOffsetParent());
+    
+    /* IE with strict doctype may try to return documentElement as offsetParent on relatively positioned elements */  
+    $(document.body).insert( new Element('div', {id:'ie_offset_parent_bug'}).setStyle('position:relative'));  
+    this.assertEqual('BODY', $('ie_offset_parent_bug').getOffsetParent().tagName.toUpperCase());  
   },
 
   testAbsolutize: function() {

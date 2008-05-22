@@ -1,3 +1,5 @@
+* Fix a bug in Element#getParentOffset that throw an error if passing document.documentElement. [jddalton]
+
 * Make Element#relativize preserve the dimensions/coordinates of absolutely positioned elements. Closes #9168. [dmmd, jddalton, kangax]
 
 * Ensure Element#absolutize accounts for element margins when it positions it. Closes #8024. [jddalton, chiefcll]
