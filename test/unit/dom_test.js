@@ -279,7 +279,28 @@ new Test.Unit.Runner({
     this.assert(!$('test-hide-visible').visible());
     $('test-hide-hidden').hide();
     this.assert(!$('test-hide-hidden').visible());
+    this.assertUndefined($('test-hide-visible')._originalDisplay);
   }, 
+  
+  testHideAndShowWithOtherInlineDisplayValue: function() {
+    $('test-visible-inline').hide();
+    this.assert(!$('test-visible-inline').visible());
+    this.assertEqual('inline', $('test-visible-inline')._originalDisplay);
+    $('test-visible-inline').show();
+    this.assert($('test-visible-inline').visible());
+    this.assertEqual('inline', $('test-visible-inline').style.display);
+    this.assertNull($('test-visible-inline')._originalDisplay);
+    
+    $('test-visible-inline').setStyle({display: 'block'});
+    
+    $('test-visible-inline').hide();
+    this.assert(!$('test-visible-inline').visible());
+    this.assertEqual('block', $('test-visible-inline')._originalDisplay);
+    $('test-visible-inline').show();
+    this.assert($('test-visible-inline').visible());
+    this.assertEqual('block', $('test-visible-inline').style.display);
+    this.assertNull($('test-visible-inline')._originalDisplay);      
+ },
   
   testElementRemove: function(){
     $('removable').remove();
@@ -923,14 +944,10 @@ new Test.Unit.Runner({
   
   testElementReadAttribute: function() {
     var attribFormIssues = $('attributes_with_issues_form');
- 	  this.assertEqual('blah-class', attribFormIssues.readAttribute('class'));
- 	  this.assertEqual('post', attribFormIssues.readAttribute('method'));
- 	  this.assertEqual('string', typeof(attribFormIssues.readAttribute('action')));
- 	  this.assertEqual('string', typeof(attribFormIssues.readAttribute('id')));
-    
-    $(document.body).insert('<div id="ie_href_test_div"></div>'); 
-    $('ie_href_test_div').insert('<p>blah blah</p><a id="ie_href_test" href="test.html">blah</a>'); 
-    this.assertEqual('test.html', $('ie_href_test').readAttribute('href')); 
+ 	this.assertEqual('blah-class', attribFormIssues.readAttribute('class'));
+ 	this.assertEqual('post', attribFormIssues.readAttribute('method'));
+ 	this.assertEqual('string', typeof(attribFormIssues.readAttribute('action')));
+ 	this.assertEqual('string', typeof(attribFormIssues.readAttribute('id')));
     
     this.assertEqual('test.html' , $('attributes_with_issues_1').readAttribute('href'));
     this.assertEqual('L' , $('attributes_with_issues_1').readAttribute('accesskey'));
@@ -1149,7 +1166,7 @@ new Test.Unit.Runner({
     this.assertIdentical(200, $('dimensions-display-none-pos-abs').getDimensions().width);
     
     // known failing issue
-    // this.assert($('dimensions-nestee').getDimensions().width <= 500, 'check for proper dimensions of hidden child elements');
+    //this.assert($('dimensions-nestee').getDimensions().width <= 500, 'check for proper dimensions of hidden child elements');
     
     $('dimensions-td').hide();
     this.assertIdentical(100, $('dimensions-td').getDimensions().height);
@@ -1259,11 +1276,11 @@ new Test.Unit.Runner({
   testElementScrollTo: function() {
     var elem = $('scroll_test_2');
     Element.scrollTo('scroll_test_2');
-    this.assertEqual(Position.page(elem)[1], 0);
+    this.assertEqual(Position.page(elem)[1], document.body.scrollTop);
     window.scrollTo(0, 0);
     
     elem.scrollTo();
-    this.assertEqual(Position.page(elem)[1], 0);      
+    this.assertEqual(Position.page(elem)[1], document.body.scrollTop);      
     window.scrollTo(0, 0);
   },
   
