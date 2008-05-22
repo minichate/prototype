@@ -1351,15 +1351,28 @@ new Test.Unit.Runner({
       elt.absolutize();
       this.assertUndefined(elt._originalLeft, 'absolutize() did not detect absolute positioning');
     }, this);
+    
     // invoking on "absolute" positioned element should return element 
     var element = $('absolute_fixed_undefined').setStyle({position: 'absolute'});
     this.assertEqual(element, element.absolutize());
     
     // test relatively positioned element with no height specified for IE7
-    var element = $('absolute_relative'), dimensions = element.getDimensions();
+    var element = $('absolute_relative'),
+    dimensions = element.getDimensions();
+    
     element.absolutize();
     this.assertIdentical(dimensions.width, element.getDimensions().width);
     this.assertIdentical(dimensions.height, element.getDimensions().height);
+ 
+    element.relativize();
+    var offset = element.cumulativeOffset();
+    element.setStyle('margin-left:-11px; margin-top:-2px;');
+    var top = offset.top - 2, left = offset.left -11,
+    newOffset = element.cumulativeOffset();
+    
+    //this.assertEqual(top,  newOffset.top);
+    this.assertEqual(left, newOffset.left);
+    element.setStyle('margin-left:0px; margin-top:0px;');
   },
   
   testRelativize: function() {

@@ -1,3 +1,9 @@
+* Make Element#relativize preserve the dimensions/coordinates of absolutely positioned elements. Closes #9168. [dmmd, jddalton, kangax]
+
+* Ensure Element#absolutize accounts for element margins when it positions it. Closes #8024. [jddalton, chiefcll]
+
+* Fix Element#absolutize calculating dimensions incorrectly in IE7. Closes #9918. [kangax, pphilipp]
+
 * Force Element.extend() to skip XML nodes to avoid errors in IE, use the static Element methods instead. Closes #9709. [jddalton, yanick.rochon]
 
 * Fix IE issue with Element#replace() removing the childNodes of the returned element. Closes #11225. [Rukawa, jddalton]

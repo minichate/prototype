@@ -541,38 +541,38 @@ Element.Methods = {
 
   absolutize: function(element) {
     element = $(element);
-    if (element.getStyle('position') == 'absolute') return element;
-    // Position.prepare(); // To be done manually by Scripty when it needs it.
+    if (Element.getStyle(element, 'position') == 'absolute') return element;
 
-    var offsets = element.positionedOffset(),
-    dimensions = element.getDimensions(),
-    top = offsets[1],
-    left = offsets[0],
+    var offsets = Element.positionedOffset(element),
+    dimensions = Element.getDimensions(element),
+    top = offsets.top,
+    left = offsets.left,
     width = dimensions.width,
     height = dimensions.height;
 
     Object.extend(element, {
-      _originalLeft:   left - parseFloat(element.style.left  || 0),
-      _originalTop:    top  - parseFloat(element.style.top || 0),
-      _originalWidth:  element.style.width,
-      _originalHeight: element.style.height
+      _originalTop:        top  - parseFloat(Element.getStyle(element, 'top')  || 0),
+      _originalLeft:       left - parseFloat(Element.getStyle(element, 'left') || 0),
+      _originalWidth:      Element.getStyle(element, 'width'),
+      _originalHeight:     Element.getStyle(element, 'height'),
+      _originalMarginTop:  Element.getStyle(element, 'marginTop'),
+      _originalMarginLeft: Element.getStyle(element, 'marginLeft')
     });
 
-    element.setStyle({
-      position: 'absolute',
-      top:      top + 'px',
-      left:     left + 'px',
-      width:    width + 'px',
-      height:   height + 'px'
+    return Element.setStyle(element, {
+      position:   'absolute',
+      top:        top + 'px',
+      left:       left + 'px',
+      width:      width + 'px',
+      height:     height + 'px',
+      marginTop:  '0px',
+      marginLeft: '0px'
     });
-    
-    return element;
   },
 
   relativize: function(element) {
     element = $(element);
-    if (element.getStyle('position') == 'relative') return element;
-    // Position.prepare(); // To be done manually by Scripty when it needs it.
+    if (Element.getStyle(element, 'position') == 'relative') return element;
 
     if(!element._originalTop){
       /* fix bizarre IE position issue with empty elements */
@@ -580,30 +580,37 @@ Element.Methods = {
       if(isBuggy) element.innerHTML = '\x00';
       
       Object.extend(element, {
-        _originalTop:    element.offsetTop,
-        _originalLeft:   element.offsetLeft,
-        _originalWidth:  element.clientWidth  + 'px',
-        _originalHeight: element.clientHeight + 'px'
+        _originalTop:        element.offsetTop,
+        _originalLeft:       element.offsetLeft,
+        _originalWidth:      Element.getStyle(element, 'width'),
+        _originalHeight:     Element.getStyle(element, 'height'),
+        _originalMarginTop:  Element.getStyle(element, 'marginTop'),
+        _originalMarginLeft: Element.getStyle(element, 'marginLeft')
       });
       
       if(isBuggy) element.innerHTML = '';
     }
 
-    element.style.position = 'relative';
-    
-    var offsets = element.positionedOffset(),
+    Element.setStyle(element, {
+      position:   'relative',
+      width:      element._originalWidth,
+      height:     element._originalHeight,
+      marginTop:  element._originalMarginTop,
+      marginLeft: element._originalMarginLeft
+    });
+
+    var offsets = Element.positionedOffset(element),
     top  = element._originalTop  - offsets.top,
     left = element._originalLeft - offsets.left;
-    
+
     var isAuto = /^(auto|)$/;  
     if(!isAuto.test(element.style.top))  top += element._originalTop;
     if(!isAuto.test(element.style.left)) left+= element._originalLeft;
-    
-    element.style.top    = top  + 'px';
-    element.style.left   = left + 'px';
-    element.style.height = element._originalHeight;
-    element.style.width  = element._originalWidth;
-    return element;
+
+    return Element.setStyle(element, {
+      top:  top  + 'px',
+      left: left + 'px'
+    });
   },
 
   cumulativeScrollOffset: function(element) {
