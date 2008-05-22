@@ -455,7 +455,7 @@ Object.extend(Selector, {
         for (var i = 0, node; node = nodes[i]; i++)
           if (node.tagName.toUpperCase() === uTagName) results.push(node);
         return results;
-      } else return $A(root.getElementsByTagName(tagName));
+      } else return root.getElementsByTagName(tagName);
     },
     
     id: function(nodes, root, id, combinator) {
