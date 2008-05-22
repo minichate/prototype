@@ -665,9 +665,11 @@ Element.Methods = {
       element = $(element);
       var valueT = 0, valueL = 0, endElement = document;
 
-      if (Prototype.Browser.Opera && opera.version() < 9.5 &&
-         element != document.body && element != document.documentElement)
-        endElement = document.documentElement;                                              
+      if (Prototype.Browser.WebKit || Prototype.Browser.Opera && opera.version() < 9.5) {
+          if(element == document.body || element == document.documentElement || element == document)
+            return Element._returnOffset(0, 0);
+        endElement = document.body;                                              
+      }
 
       if (Element.getStyle(element, 'position') != 'fixed') {
         while ((element = element.parentNode) && element != endElement) {
