@@ -716,7 +716,7 @@ Element.Methods = {
           Element.getStyle(element, 'position') == 'absolute') break;
       } while ((element = op) != document.body);
 
-      var scrollOffset = Element.cumulativeScrollOffset(element);
+      var scrollOffset = Element.cumulativeScrollOffset(forElement);
       valueT -= scrollOffset.top;
       valueL -= scrollOffset.left;
       

@@ -1374,9 +1374,12 @@ new Test.Unit.Runner({
     this.assertIdentical(0, offset.top);
     this.assertIdentical(0, offset.left);
     
-    this.assertEnumEqual([10,10], $('absolute_fixed').viewportOffset());  
-    window.scrollTo(0,30);  
-    this.assertEnumEqual([10,10], $('absolute_fixed').viewportOffset());  
+    var offset = $('absolute_fixed').viewportOffset();
+    this.assertEnumEqual([offset.left,offset.top], $('absolute_fixed').viewportOffset());  
+    window.scrollTo(0,30);
+    this.assertEnumEqual([offset.left,offset.top], $('absolute_fixed').viewportOffset());  
+    window.scrollTo(0,80);
+    this.assertEnumEqual([offset.left,offset.top], $('absolute_fixed').viewportOffset());  
     window.scrollTo(0,0);
   },
   
