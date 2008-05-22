@@ -200,6 +200,7 @@ new Test.Unit.Runner({
     this.assert(!Object.isHash(false));
     this.assert(!Object.isHash(true));
     this.assert(!Object.isHash([]));
+    this.assert(!Object.isHash(window.undefined_var));
   },
   
   testObjectIsElement: function() {

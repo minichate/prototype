@@ -1,3 +1,5 @@
+* Fix Object.isHash throwing error when passed undefined variable in IE. [Viktor Kojouharov, jddalton]
+
 * Fix issue where Ajax.Request does not work with local files in IE7. Closes #8259. [hagen.seifert, jddalton]
 
 * Ensure Array#intersect returns correct result if intersect value is 0. [jddalton]
