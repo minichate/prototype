@@ -287,7 +287,6 @@ Element.Methods = {
     if (t.names[name]) name = t.names[name];
     
     if (Prototype.Browser.IE) {
-      var t = Element._attributeTranslations.read;
       // If we're reading from a form, avoid a conflict between an attribute
       // and a child name.
       if (element.tagName.toUpperCase() == 'FORM' &&
@@ -296,7 +295,6 @@ Element.Methods = {
         element = $(element.cloneNode(false));
       }
       if (t.values[name]) return t.values[name](element, name);
-      if (t.names[name]) name = t.names[name];
       if (name.include(':')) {
         return (!element.attributes || !element.attributes[name]) ? null : 
          element.attributes[name].value;
