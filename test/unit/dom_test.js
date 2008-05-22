@@ -933,8 +933,8 @@ new Test.Unit.Runner({
     
     // check to see if other units convert to px
     var backup = $('style_test_1').getStyle('height');
-    $('style_test_1').show().setStyle({height: '2cm'});
-    this.assertEqual(76, Math.round(parseFloat( $('style_test_1').getStyle('height') )));
+    $('style_test_1').show().setStyle({height: '2in'});
+    this.assertEqual(192, parseInt($('style_test_1').getStyle('height')));
     $('style_test_1').setStyle({height: backup});
   },
   
