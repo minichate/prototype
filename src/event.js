@@ -395,9 +395,7 @@ Object.extend(document, {
   }
 
   if (document.addEventListener) {
-<<<<<<< HEAD:src/event.js
     document.addEventListener("DOMContentLoaded", fireContentLoadedEvent, false);
-=======
     if (Prototype.Browser.Opera) {
       isCssLoaded = function() {
          var sheets = document.styleSheets, length = sheets.length;
