@@ -10,8 +10,6 @@
 
 * Correct how Element#clonePosition sets element dimensions. Closes #11613. [#9 state:resolved] [azazel, jddalton, Nick Stakenburg]
 
-* Ensure Element#getDimensions works with display:none ancestors. Resolves part 1 of LH#9. [Nick Stakenburg]
-
 * Fix a bug in Element#getParentOffset that throw an error if passing document.documentElement. [jddalton]
 
 * Make Element#relativize preserve the dimensions/coordinates of absolutely positioned elements. Closes #9168. [dmmd, jddalton, kangax]
