@@ -389,9 +389,36 @@ Object.extend(document, {
     document.loaded = true;
     document.fire("dom:loaded");
   }
-  
+
+  function isCssLoaded() {
+    return true;
+  }
+
   if (document.addEventListener) {
-    document.addEventListener("DOMContentLoaded", fireContentLoadedEvent, false);
+    if (Prototype.Browser.Opera) {
+      isCssLoaded = function() {
+         var sheets = document.styleSheets, length = sheets.length;
+         while (length--) if (sheets[length].disabled) return false;
+         return true;
+      };
+      // Force check to end when window loads
+      Event.observe(window, "load", function() { isCssLoaded = function() { return true } });
+    }
+    else if (Prototype.Browser.WebKit) {
+      isCssLoaded = function() {
+        var length = document.getElementsByTagName('style').length,
+        links = document.getElementsByTagName('link');
+        for (var i=0, link; link = links[i]; i++)
+          if(link.getAttribute('rel') == "stylesheet") length++;
+        return document.styleSheets.length >= length;
+      };
+    }
+    document.addEventListener("DOMContentLoaded", function() {
+      // Ensure all stylesheets are loaded, solves Opera/Safari issue
+      if (!isCssLoaded()) return arguments.callee.defer();
+      fireContentLoadedEvent();
+    }, false);
+    
   } else {
     document.attachEvent("onreadystatechange", function() {
       if (document.readyState == "complete") {
@@ -413,11 +440,11 @@ Object.extend(document, {
   // WebKit builds lower than 525.13 don't support DOMContentLoaded
   if (Prototype.Browser.WebKit && (navigator.userAgent.match(/AppleWebKit\/(\d+)/)[1] < 525)) {
     timer = setInterval(function() {
-      if (/loaded|complete/.test(document.readyState))
+      if (/loaded|complete/.test(document.readyState) && isCssLoaded())
         fireContentLoadedEvent();
     }, 10);
   }
   
   // Worst case fallback... 
-  Event.observe(window, "load", fireContentLoadedEvent); 
+  Event.observe(window, "load", fireContentLoadedEvent);
 })();
