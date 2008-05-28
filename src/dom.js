@@ -556,8 +556,8 @@ Element.Methods = {
       if(isBuggy) element.innerHTML = '\x00';
       
       Object.extend(element, {
-        _originalTop:        element.offsetTop,
-        _originalLeft:       element.offsetLeft,
+        _originalTop:        element.offsetTop  || 0,
+        _originalLeft:       element.offsetLeft || 0,
         _originalWidth:      Element.getStyle(element, 'width'),
         _originalHeight:     Element.getStyle(element, 'height'),
         _originalMarginTop:  Element.getStyle(element, 'marginTop'),
@@ -648,8 +648,8 @@ Element.Methods = {
       element = $(element);
       var valueT = 0, valueL = 0;
       do {
-        valueT += (element.offsetTop  || 0);
-        valueL += (element.offsetLeft || 0);
+        valueT += element.offsetTop  || 0;
+        valueL += element.offsetLeft || 0;
       } while ((element = Element.getOffsetParent(element)) != document.body);
 
       return Element._returnOffset(valueL, valueT);
@@ -659,8 +659,8 @@ Element.Methods = {
       element = $(element);
       var valueT = 0, valueL = 0;
       do {
-        valueT += (element.offsetTop  || 0);
-        valueL += (element.offsetLeft || 0);
+        valueT += element.offsetTop  || 0;
+        valueL += element.offsetLeft || 0;
         element = Element.getOffsetParent(element);
       } while (element != document.body && Element.getStyle(element, 'position') == 'static');
 
@@ -672,8 +672,8 @@ Element.Methods = {
       var op, element = forElement, valueT = 0, valueL = 0;
       
       do {
-        valueT += (element.offsetTop  || 0);
-        valueL += (element.offsetLeft || 0);
+        valueT += element.offsetTop  || 0;
+        valueL += element.offsetLeft || 0;
 
         // Safari fix
         op = Element.getOffsetParent(element);
