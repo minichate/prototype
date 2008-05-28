@@ -44,7 +44,7 @@ Class.Methods = {
       var property = properties[i], value = source[property];
       if (ancestor && Object.isFunction(value) &&
           value.argumentNames().first() == "$super") {
-        var method = value, value =(function(m) {
+        var method = value, value = (function(m) {
           return function() { return ancestor[m].apply(this, arguments) };
         })(property).wrap(method);
 
