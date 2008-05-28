@@ -56,7 +56,7 @@ var Position = {
     this.xcomp = x;
     this.ycomp = y;
     this.offset = Element.cumulativeOffset(element);
-
+    
     return (y >= this.offset[1] &&
             y <  this.offset[1] + dimensions.height &&
             x >= this.offset[0] && 
@@ -67,8 +67,8 @@ var Position = {
     var offsetcache = Element.cumulativeScrollOffset(element),
     dimensions = Element.getDimensions(element);
 
-    this.xcomp = x + offsetcache[0] - this.deltaX;
-    this.ycomp = y + offsetcache[1] - this.deltaY;
+    this.xcomp = x + offsetcache[0];
+    this.ycomp = y + offsetcache[1];
     this.offset = Element.cumulativeOffset(element);
 
     return (this.ycomp >= this.offset[1] &&
