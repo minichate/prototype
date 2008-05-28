@@ -283,10 +283,10 @@ Element.Methods = {
   
   readAttribute: function(element, name) {
     element = $(element);
-    var t = Element._attributeTranslations.read;
-    if (t.names[name]) name = t.names[name];
-    
     if (Prototype.Browser.IE) {
+      var t = Element._attributeTranslations.read; 
+      if (t.names[name]) name = t.names[name];
+      
       // If we're reading from a form, avoid a conflict between an attribute
       // and a child name.
       if (element.tagName.toUpperCase() == 'FORM' &&
@@ -299,8 +299,7 @@ Element.Methods = {
         return (!element.attributes || !element.attributes[name]) ? null : 
          element.attributes[name].value;
       }
-    } else if (t.values[name]) return t.values[name](element, name);
-    
+    }
     return element.getAttribute(name);
   },
   
