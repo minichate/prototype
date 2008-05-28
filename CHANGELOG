@@ -1,3 +1,5 @@
+* Ensure deprecated Position object methods use Element#getDimensions.  [jddalton]
+
 * Correct Element#cumulativeScrollOffset for IE, Safari, and Opera < 9.5.  [jddalton]
 
 * Make Form#serializeElements more closely follow the W3C specifications. [#85 state:resolved] [jddalton]
