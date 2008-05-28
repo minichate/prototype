@@ -196,7 +196,7 @@ new Test.Unit.Runner({
   
   testNewElementInsert: function() {
     var container = new Element('div');
-    element = new Element('div');
+    var element = new Element('div');
     container.insert(element);
     
     element.insert({ before: '<p>a paragraph</p>' });
@@ -1258,11 +1258,12 @@ new Test.Unit.Runner({
   testElementScrollTo: function() {
     var elem = $('scroll_test_2');
     Element.scrollTo('scroll_test_2');
-    this.assertEqual(Position.page(elem)[1], document.body.scrollTop);
+    // IE has issues with document.body.scrollTop
+    this.assertEqual(Position.page(elem)[1], document.body.scrollTop || document.documentElement.scrollTop);
     window.scrollTo(0, 0);
     
     elem.scrollTo();
-    this.assertEqual(Position.page(elem)[1], document.body.scrollTop);      
+    this.assertEqual(Position.page(elem)[1], document.body.scrollTop || document.documentElement.scrollTop);      
     window.scrollTo(0, 0);
   },
   
@@ -1397,16 +1398,7 @@ new Test.Unit.Runner({
     element.absolutize();
     this.assertIdentical(dimensions.width, element.getDimensions().width);
     this.assertIdentical(dimensions.height, element.getDimensions().height);
- 
     element.relativize();
-    var offset = element.cumulativeOffset();
-    element.setStyle('margin-left:-11px; margin-top:-2px;');
-    var top = offset.top - 2, left = offset.left -11,
-    newOffset = element.cumulativeOffset();
-    
-    //this.assertEqual(top,  newOffset.top);
-    this.assertEqual(left, newOffset.left);
-    element.setStyle('margin-left:0px; margin-top:0px;');
   },
   
   testRelativize: function() {
