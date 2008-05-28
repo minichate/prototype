@@ -450,7 +450,8 @@ Element.Methods = {
     
     // All width and height properties return 0 on elements with display:none,
     // so show the element temporarily
-    if(display == "none" || display === null) {
+    if (display == "none" || display === null ||
+        dimensions.width == 0 || dimensions.height == 0) {
       var els = element.style,
       originalVisibility = els.visibility,
       originalPosition = els.position,
@@ -627,9 +628,9 @@ Element.Methods = {
       element = $(element);
       var valueT = 0, valueL = 0, endElement = document;
 
-      if (Prototype.Browser.WebKit || Prototype.Browser.Opera && opera.version() < 9.5) {
-          if(element == document.body || element == document.documentElement || element == document)
-            return Element._returnOffset(0, 0);
+      if (!Prototype.Browser.Mozilla && !(Prototype.Browser.Opera && opera.version() >= 9.5)) {
+        if(element == document.body || element == document.documentElement || element === document)
+          return Element._returnOffset(0, 0);
         endElement = document.body;                                              
       }
 
