@@ -406,7 +406,7 @@ Element.Methods = {
     element = $(element);
     style = style == 'float' ? 'cssFloat' : style.camelize();
     var value = element.style[style];
-    if (document.defaultView && document.defaultView.getComputedStyle) {
+    if (!value || value == 'auto') {
       var css = document.defaultView.getComputedStyle(element, null);
       value = css ? css[style] : null;
     }
@@ -445,65 +445,25 @@ Element.Methods = {
   
   getDimensions: function(element) {
     element = $(element);
+    var display = element.getStyle('display');
+    if (display != 'none' && display != null) // Safari bug
+      return {width: element.offsetWidth, height: element.offsetHeight};
     
-    // The style object is inaccessible in Safari <= 2.0 when the element
-    // is hidden.
-    var display = Element.getStyle(element, 'display'),
-    isNotShown = display == "none" || display === null || element.clientWidth == 0 || element.clientHeight == 0,
-    hasHiddenAncestor = false,
-    noOffsetWidth;
-    
-    // If the element is hidden, we show it for an instant
-    // to grab its dimensions.
-    if (isNotShown) {
-      var restore = [], styles = [],
-      setTempStyle = function(c) {
-        restore.push(c);
-        styles.push({
-          display: c.getStyle('display'),
-          position: c.getStyle('position'),
-          visibility: c.getStyle('visibility')
-        });
-        Element.setStyle(c, 'display:block;visibility:visible;position:absolute;');
-      };
-      
-      // If, after showing the element, it still has an offsetHeight of 0,
-      // we assume one of its ancestors is hidden.
-      setTempStyle(element);
-      
-      if (element.offsetHeight == 0) {
-        element.ancestors().each(function(ancestor) {
-          if (ancestor !== element && Element.visible(ancestor)) return;
-          setTempStyle(ancestor);
-        });
-      }
-    }
-    
-    // clientWidth includes margin offsets of a table in Mozilla,
-    // set offsets to 0, get width value, then revert back
-    if (element.tagName.toUpperCase() == 'TABLE') {
-      var originalLeft = element.style.marginLeft;
-      var originalRight = element.style.marginRight;
-      element.style.marginLeft = '0px';
-      element.style.marginRight = '0px';
-      noOffsetWidth = element.clientWidth;
-      element.style.marginLeft = originalLeft;
-      element.style.marginRight = originalRight;
-    }
-    
-    var dimensions = {
-      width:  noOffsetWidth || element.clientWidth,
-      height: element.clientHeight
-    };
-    
-    // If we altered the element's styles, return them to their
-    // original values.
-    if (isNotShown) {
-      var length = restore.length;
-      while (length--) restore[length].setStyle(styles[length]);
-    }
-    
-    return dimensions;
+    // All *Width and *Height properties give 0 on elements with display none,
+    // so enable the element temporarily
+    var els = element.style;
+    var originalVisibility = els.visibility;
+    var originalPosition = els.position;
+    var originalDisplay = els.display;
+    els.visibility = 'hidden';
+    els.position = 'absolute';
+    els.display = 'block';
+    var originalWidth = element.clientWidth;
+    var originalHeight = element.clientHeight;
+    els.display = originalDisplay;
+    els.position = originalPosition;
+    els.visibility = originalVisibility;
+    return {width: originalWidth, height: originalHeight};    
   },
   
   makePositioned: function(element) {
@@ -912,21 +872,6 @@ else if (Prototype.Browser.IE) {
         return element['offset' + style.capitalize()] + 'px';
       return null;
     }
-    
-    // If the unit is something other than a pixel (em, pt, %), set it on
-    // something we can grab a pixel value from.
-    // Hack by Dean Edwards:
-    // http://erik.eae.net/archives/2007/07/27/18.54.15/#comment-102291
-    if (/^\d+(?!px)(%|[a-z]{2})$/i.test(value)) {
-      var style = element.style.left, runtimeStyle = element.runtimeStyle.left;
-      element.runtimeStyle.left = element.currentStyle.left;
-      element.style.left = value;
-      value = element.style.pixelLeft + 'px';
-      // revert changes
-      element.style.left = style;
-      element.runtimeStyle.left = runtimeStyle;
-    }
-    
     return value;
   };
   

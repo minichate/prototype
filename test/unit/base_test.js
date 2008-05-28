@@ -220,6 +220,8 @@ new Test.Unit.Runner({
     this.assert(!Object.isFunction(0));
     this.assert(!Object.isFunction(false));
     this.assert(!Object.isFunction(undefined));
+    this.assert(!Object.isFunction(/foo/));
+    this.assert(!Object.isFunction(document.getElementsByTagName('div')));
   },
   
   testObjectIsString: function() {
@@ -500,6 +502,17 @@ new Test.Unit.Runner({
       toString: function() { return "toString" },
       valueOf: function() { return "valueOf" }
     });
+    
+    var Parent = Class.create({
+      m1: function(){ return 'm1' },
+      m2: function(){ return 'm2' }
+    });
+    var Child = Class.create(Parent, {
+      m1: function($super) { return 'm1 child' },
+      m2: function($super) { return 'm2 child' }
+    });
+    
+    this.assert(new Child().m1.toString().indexOf('m1 child') > -1);
     
     this.assertEqual("toString", new Foo().toString());
     this.assertEqual("valueOf", new Foo().valueOf());
