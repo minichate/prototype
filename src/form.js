@@ -115,7 +115,10 @@ Form.Methods = {
 
     var params = options.parameters, action = form.readAttribute('action') || '';
     if (action.blank()) action = window.location.href;
-    options.parameters = form.serialize(true);
+
+    var submit = options.submit;
+    delete options.submit;
+    options.parameters = form.serialize({submit:submit, hash:true});
     
     if (params) {
       if (Object.isString(params)) params = params.toQueryParams();
