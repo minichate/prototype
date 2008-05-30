@@ -173,7 +173,13 @@ Object.extend(Event, (function() {
     };
 
     if (dispatchWrapper) wrappers.dispatcher = wrappers.dispatcher.wrap(dispatchWrapper);
-    element.attachEvent("on" + getDOMEventName(eventName), wrappers.dispatcher);
+    
+    var name = getDOMEventName(eventName);
+    if (element.addEventListener) {
+      element.addEventListener(name, wrappers.dispatcher, false);
+    } else {
+      element.attachEvent("on" + name, wrappers.dispatcher);
+    }
   }
   
   function getWrappersForEventName(id, eventName) {
@@ -276,21 +282,14 @@ Object.extend(Event, (function() {
   else if (Prototype.Browser.WebKit) {
     window.addEventListener("unload", Prototype.emptyFunction, false);
   }
-    
+
   return {
     observe: function(element, eventName, handler) {
       element = $(element);
-      var name = getDOMEventName(eventName);
-      
       var wrapper = createWrapper(element, eventName, handler);
       if (!wrapper) return element;
       
-      if (element.addEventListener) {
-        element.addEventListener(name, wrapper, false);
-      } else {
-        addEventDispatcher(element, eventName);
-      }
-      
+      addEventDispatcher(element, eventName);
       return element;
     },
   
