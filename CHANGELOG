@@ -2,7 +2,11 @@
 
 * Allow Form#request pass the "submit" option to Form#serialize. [#66 state:resolved] [Ben Sommerville, jddalton, jodosha]
 
-* Ensure deprecated Position object methods use Element#getDimensions.  [jddalton]
+* Ensure Object.isElement handles "falsy" values properly. [kangax]
+
+* Fix exiting test task on INT signal. [Samuel Lebeau]
+
+* Ensure deprecated Position object methods use Element#getDimensions. [jddalton]
 
 * Correct Element#cumulativeScrollOffset for IE, Safari, and Opera < 9.5.  [jddalton]
 
