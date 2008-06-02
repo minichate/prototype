@@ -289,12 +289,16 @@ Element.Methods = {
     if (Prototype.Browser.IE) {
       // If we're reading from a form, avoid a conflict between an attribute
       // and a child name.
-      if (element.tagName.toUpperCase() == 'FORM' &&
+      var tagName = element.tagName.toUpperCase();
+      if (tagName == 'FORM' &&
         !/^((child|parent)Node|(next|previous)Sibling)$/.test(name) &&
           element.children[name]){
         element = $(element.cloneNode(false));
       }
-      if (t.values[name]) return t.values[name](element, name);
+      if (tagName == 'IFRAME' && name == 'type')
+        return element.getAttribute(name, 1);
+      if (t.values[name])
+        return t.values[name](element, name);
       if (name.include(':')) {
         return (!element.attributes || !element.attributes[name]) ? null : 
          element.attributes[name].value;

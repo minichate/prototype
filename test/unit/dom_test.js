@@ -981,6 +981,11 @@ new Test.Unit.Runner({
       $('attributes_with_issues_readonly').writeAttribute('readonly', value);
       this.assertEqual('readonly', $('attributes_with_issues_readonly').readAttribute('readonly'));
     }, this);
+    
+    // test IE issue with readAttribute and invalid 'type' attribute of iframes
+    this.assertNull($('dummy_iframe').readAttribute('type'));
+    $('dummy_iframe').writeAttribute('type', 'foo');
+    this.assertIdentical('foo', $('dummy_iframe').readAttribute('type'));
   },
   
   testElementWriteAttribute: function() {
