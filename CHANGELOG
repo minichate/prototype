@@ -2,7 +2,7 @@
 
 * Allow Form#request pass the "submit" option to Form#serialize. [#66 state:resolved] [Ben Sommerville, jddalton, jodosha]
 
-* Ensure Object.isElement handles "falsy" values properly. [kangax]
+* Ensure Object.isElement and Object.isHash handles "falsy" values properly. [jddalton, kangax]
 
 * Fix exiting test task on INT signal. [Samuel Lebeau]
 
