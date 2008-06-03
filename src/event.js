@@ -407,7 +407,7 @@ Object.extend(document, {
       isCssLoaded = function() {
         var length = document.getElementsByTagName('style').length,
         links = document.getElementsByTagName('link');
-        for (var i=0, link; link = links[i]; i++)
+        for (var i = 0, link; link = links[i]; i++)
           if(link.getAttribute('rel') == "stylesheet") length++;
         return document.styleSheets.length >= length;
       };
@@ -436,7 +436,7 @@ Object.extend(document, {
     }
   }
   
-  // Safari <3.1 doesn't support DOMContentLoaded
+  // Safari < 3.1 doesn't support DOMContentLoaded
   if (Prototype.Browser.WebKit && (navigator.userAgent.match(/AppleWebKit\/(\d+)/)[1] < 525)) {
     timer = setInterval(function() {
       if (/loaded|complete/.test(document.readyState) && isCssLoaded())
