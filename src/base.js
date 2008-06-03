@@ -128,7 +128,7 @@ Object.extend(Object, {
   },
   
   isElement: function(object) {
-    return object && object.nodeType == 1;
+    return !!(object && object.nodeType == 1);
   },
   
   isArray: function(object) {
@@ -137,7 +137,7 @@ Object.extend(Object, {
   },
   
   isHash: function(object) {
-    return object && object instanceof Hash;
+    return !!(object && object instanceof Hash);
   },
   
   isFunction: function(object) {

@@ -68,7 +68,10 @@ div.style-test { margin-left: 1px }
 }
 
 <<<<<<< HEAD:test/unit/fixtures/dom.css
+<<<<<<< HEAD:test/unit/fixtures/dom.css
 =======
+=======
+>>>>>>> 7eb4c862ea5ca61142b609838f46c314e5e438e9:test/unit/fixtures/dom.css
 #clonePositionSource {
   position: absolute;
   top: 10px;
@@ -87,7 +90,10 @@ div.style-test { margin-left: 1px }
   border: 5px solid black;
   background: #21bacc;
 }
+<<<<<<< HEAD:test/unit/fixtures/dom.css
 >>>>>>> f3e16c4131343e92d7f935f804dd67a956d46f87:test/unit/fixtures/dom.css
+=======
+>>>>>>> 7eb4c862ea5ca61142b609838f46c314e5e438e9:test/unit/fixtures/dom.css
 
 #notInlineAbsoluted { position: absolute; }
 

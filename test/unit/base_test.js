@@ -200,7 +200,13 @@ new Test.Unit.Runner({
     this.assert(!Object.isHash(false));
     this.assert(!Object.isHash(true));
     this.assert(!Object.isHash([]));
-    this.assert(!Object.isHash(window.undefined_var));
+    
+    // falsy variables should not mess up return value type
+    this.assertIdentical(false, Object.isHash(0));
+    this.assertIdentical(false, Object.isHash(''));
+    this.assertIdentical(false, Object.isHash(NaN));
+    this.assertIdentical(false, Object.isHash(null));
+    this.assertIdentical(false, Object.isHash(undefined));
   },
   
   testObjectIsElement: function() {
@@ -208,6 +214,13 @@ new Test.Unit.Runner({
     this.assert(Object.isElement(new Element('div')));
     this.assert(Object.isElement($('testlog')));
     this.assert(!Object.isElement(document.createTextNode('bla')));
+
+    // falsy variables should not mess up return value type
+    this.assertIdentical(false, Object.isElement(0));
+    this.assertIdentical(false, Object.isElement(''));
+    this.assertIdentical(false, Object.isElement(NaN));
+    this.assertIdentical(false, Object.isElement(null));
+    this.assertIdentical(false, Object.isElement(undefined));
   },
   
   testObjectIsFunction: function() {

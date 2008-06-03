@@ -173,7 +173,13 @@ Object.extend(Event, (function() {
     };
 
     if (dispatchWrapper) wrappers.dispatcher = wrappers.dispatcher.wrap(dispatchWrapper);
-    element.attachEvent("on" + getDOMEventName(eventName), wrappers.dispatcher);
+    
+    var name = getDOMEventName(eventName);
+    if (element.addEventListener) {
+      element.addEventListener(name, wrappers.dispatcher, false);
+    } else {
+      element.attachEvent("on" + name, wrappers.dispatcher);
+    }
   }
   
   function getWrappersForEventName(id, eventName) {
@@ -276,21 +282,14 @@ Object.extend(Event, (function() {
   else if (Prototype.Browser.WebKit) {
     window.addEventListener("unload", Prototype.emptyFunction, false);
   }
-    
+
   return {
     observe: function(element, eventName, handler) {
       element = $(element);
-      var name = getDOMEventName(eventName);
-      
       var wrapper = createWrapper(element, eventName, handler);
       if (!wrapper) return element;
       
-      if (element.addEventListener) {
-        element.addEventListener(name, wrapper, false);
-      } else {
-        addEventDispatcher(element, eventName);
-      }
-      
+      addEventDispatcher(element, eventName);
       return element;
     },
   
@@ -396,6 +395,7 @@ Object.extend(document, {
 
   if (document.addEventListener) {
     document.addEventListener("DOMContentLoaded", fireContentLoadedEvent, false);
+
     if (Prototype.Browser.Opera) {
       isCssLoaded = function() {
          var sheets = document.styleSheets, length = sheets.length;
@@ -409,7 +409,7 @@ Object.extend(document, {
       isCssLoaded = function() {
         var length = document.getElementsByTagName('style').length,
         links = document.getElementsByTagName('link');
-        for (var i=0, link; link = links[i]; i++)
+        for (var i = 0, link; link = links[i]; i++)
           if(link.getAttribute('rel') == "stylesheet") length++;
         return document.styleSheets.length >= length;
       };
@@ -438,7 +438,7 @@ Object.extend(document, {
     }
   }
   
-  // WebKit builds lower than 525.13 don't support DOMContentLoaded
+  // Safari < 3.1 doesn't support DOMContentLoaded
   if (Prototype.Browser.WebKit && (navigator.userAgent.match(/AppleWebKit\/(\d+)/)[1] < 525)) {
     timer = setInterval(function() {
       if (/loaded|complete/.test(document.readyState) && isCssLoaded())
