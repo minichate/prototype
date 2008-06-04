@@ -258,11 +258,11 @@ Object.extend(Event, (function() {
     
     // Ensure window onload is fired after "dom:loaded"
     addEventDispatcher(window, 'load', function(proceed, event) {
-    	if (document.loaded) {
-    	  proceed(event);
-    	} else {
-    	  arguments.callee.defer(proceed, event);
-    	}
+      if (document.loaded) {
+        proceed(event);
+      } else {
+        arguments.callee.defer(proceed, event);
+      }
     });
     
     // Ensure window onresize is fired only once per resize
