@@ -98,7 +98,7 @@
 
 * Speed up Function#argumentNames. Avoid Enum dependency. [Samuel Lebeau, Tobie Langel]
 
-* Fix an issue where Element#getHeight returns null if the height is set to "auto." [kangax, ylucas, jddalton]
+* Fix an issue where Element#getHeight returns null if the height is set to "auto". [kangax, ylucas, jddalton]
 
 * Make Element#absolutize use Element#getDimensions to prevent certain failures in IE. [kangax, pphilipp, jddalton]
 

@@ -1104,7 +1104,7 @@ new Test.Unit.Runner({
       this.assertRespondsTo('fooBar', new Element('div'));
     }
     
-    //test IE setting "type" property of newly created button element
+    // test IE setting "type" property of newly created button element
     var button = new Element('button', {id:'button_type_test',type: 'reset'}); 
  	var form   = $('attributes_with_issues_form');   
  	var input  = $('attributes_with_issues_regular');    
@@ -1144,7 +1144,7 @@ new Test.Unit.Runner({
     this.assertIdentical(200, $('dimensions-display-none-pos-abs').getDimensions().width);
     
     // known failing issue
-    //this.assert($('dimensions-nestee').getDimensions().width <= 500, 'check for proper dimensions of hidden child elements');
+    // this.assert($('dimensions-nestee').getDimensions().width <= 500, 'check for proper dimensions of hidden child elements');
     
     $('dimensions-td').hide();
     this.assertIdentical(100, $('dimensions-td').getDimensions().height);
