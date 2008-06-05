@@ -50,10 +50,6 @@
 
 * Ensure Array#intersect returns correct result if intersect value is 0. [jddalton]
 
-* Preserve inline display styles when showing/hiding an element. Closes #3868. [anonymous, Tobie Langel]
-
-* Allow Ajax query parameters for any HTTP method. Closes #11009. [cfis, jddalton]
-
 * Form.Element.getValue should return null on unknown/unsupported elements. Closes #8381. [jddalton, tdd]
 
 * Ensure Element.hide and Element.show return an element, even if you pass an element ID. [jddalton]
@@ -88,10 +84,6 @@
 
 * Cleaned up event.js; renaming some confusing or contradictory variable names and making consistent use of double quotes. [jddalton]
 
-* In IE, enforce first-in-first-out event order.
-  Ensure all dom:loaded observers are executed before executing window "onload" observers.
-  Stop window "onresize" from firing multiple times for one resize action. Closes #9394. [Samuel Lebeau, jddalton]
-
 * Set document.loaded = true before firing dom:loaded custom event. Closes #11453. [choppsta, jddalton]
 
 * Fix Event.stopObserving() IE error on elements with no observers. [jddalton]
@@ -111,6 +103,8 @@
 * Make Element#absolutize use Element#getDimensions to prevent certain failures in IE. [kangax, pphilipp, jddalton]
 
 * Fix Element#writeAttribute('encType', 'multipart/form-data') on dynamically created form elements in IE. [jddalton, kangax, NoiseEee]
+
+* Set document.loaded = true before calling document.fire('dom:loaded'). Closes #11453. [choppsta, jddalton]
 
 * Element#down on an input element should not raise error. [humeniuc, kangax]
 

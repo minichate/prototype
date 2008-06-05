@@ -89,9 +89,10 @@ Ajax.Request = Class.create(Ajax.Base, {
     this.parameters = params;
 
     if (params = Object.toQueryString(params)) {
-      this.url += (this.url.include('?') ? '&' : '?') + params;
-      if (this.method == 'post' && 
-          /Konqueror|Safari|KHTML/.test(navigator.userAgent))
+      // when GET, append parameters to URL
+      if (this.method == 'get')
+        this.url += (this.url.include('?') ? '&' : '?') + params;
+      else if (/Konqueror|Safari|KHTML/.test(navigator.userAgent))
         params += '&_=';
     }
 

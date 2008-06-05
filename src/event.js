@@ -173,13 +173,7 @@ Object.extend(Event, (function() {
     };
 
     if (dispatchWrapper) wrappers.dispatcher = wrappers.dispatcher.wrap(dispatchWrapper);
-    
-    var name = getDOMEventName(eventName);
-    if (element.addEventListener) {
-      element.addEventListener(name, wrappers.dispatcher, false);
-    } else {
-      element.attachEvent("on" + name, wrappers.dispatcher);
-    }
+    element.attachEvent("on" + getDOMEventName(eventName), wrappers.dispatcher);
   }
   
   function getWrappersForEventName(id, eventName) {
@@ -258,11 +252,11 @@ Object.extend(Event, (function() {
     
     // Ensure window onload is fired after "dom:loaded"
     addEventDispatcher(window, 'load', function(proceed, event) {
-      if (document.loaded) {
-        proceed(event);
-      } else {
-        arguments.callee.defer(proceed, event);
-      }
+    	if (document.loaded) {
+    	  proceed(event);
+    	} else {
+    	  arguments.callee.defer(proceed, event);
+    	}
     });
     
     // Ensure window onresize is fired only once per resize
@@ -282,14 +276,21 @@ Object.extend(Event, (function() {
   else if (Prototype.Browser.WebKit) {
     window.addEventListener("unload", Prototype.emptyFunction, false);
   }
-
+    
   return {
     observe: function(element, eventName, handler) {
       element = $(element);
+      var name = getDOMEventName(eventName);
+      
       var wrapper = createWrapper(element, eventName, handler);
       if (!wrapper) return element;
       
-      addEventDispatcher(element, eventName);
+      if (element.addEventListener) {
+        element.addEventListener(name, wrapper, false);
+      } else {
+        addEventDispatcher(element, eventName);
+      }
+      
       return element;
     },
   
@@ -407,7 +408,7 @@ Object.extend(document, {
       isCssLoaded = function() {
         var length = document.getElementsByTagName('style').length,
         links = document.getElementsByTagName('link');
-        for (var i = 0, link; link = links[i]; i++)
+        for (var i=0, link; link = links[i]; i++)
           if(link.getAttribute('rel') == "stylesheet") length++;
         return document.styleSheets.length >= length;
       };
@@ -436,7 +437,7 @@ Object.extend(document, {
     }
   }
   
-  // Safari < 3.1 doesn't support DOMContentLoaded
+  // Safari <3.1 doesn't support DOMContentLoaded
   if (Prototype.Browser.WebKit && (navigator.userAgent.match(/AppleWebKit\/(\d+)/)[1] < 525)) {
     timer = setInterval(function() {
       if (/loaded|complete/.test(document.readyState) && isCssLoaded())
