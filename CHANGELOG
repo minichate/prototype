@@ -1,3 +1,5 @@
+* Replace browser sniffing with capability detection in IE fork of String#unescapeHTML. [kangax]
+
 * Ensure css files have loaded before firing the dom:loaded event. [Diego Perini, jddalton]
 
 * Allow Form#request pass the "submit" option to Form#serialize. [#66 state:resolved] [Ben Sommerville, jddalton, jodosha]
