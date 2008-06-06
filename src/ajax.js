@@ -1,9 +1,9 @@
 var Ajax = {
   getTransport: function() {
     return Try.these(
-      function() {return new XMLHttpRequest()},
       function() {return new ActiveXObject('Msxml2.XMLHTTP')},
       function() {return new ActiveXObject('Microsoft.XMLHTTP')}
+      function() {return new XMLHttpRequest()},
     ) || false;
   },
 
@@ -332,7 +332,7 @@ Ajax.Updater = Class.create(Ajax.Request, {
 
   updateContent: function(responseText) {
     var receiver = this.container[this.success() ? 'success' : 'failure'],
-        options = this.options;
+     options = this.options;
 
     if (!options.evalScripts) responseText = responseText.stripScripts();
 

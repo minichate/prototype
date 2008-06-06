@@ -1,12 +1,12 @@
 * Replace browser sniffing with capability detection in IE fork of String#unescapeHTML. [kangax]
 
-* Ensure css files have loaded before firing the dom:loaded event. [Diego Perini, jddalton]
+* Ensure CSS files have loaded before firing the dom:loaded event. [Diego Perini, jddalton]
 
-* Allow Form#request pass the "submit" option to Form#serialize. [#66 state:resolved] [Ben Sommerville, jddalton, jodosha]
+* Allow Form#request to pass the "submit" option to Form#serialize. [#66 state:resolved] [Ben Sommerville, jddalton, jodosha]
 
-* Ensure Element#readAttribute works properly when accessing type attribute of an iframe. [#118 state:resolved] [Zekid, kangax]
+* Ensure Element#readAttribute works properly when accessing the "type" attribute of an IFRAME. [#118 state:resolved] [Zekid, kangax]
 
-* Ensure Object.isElement and Object.isHash handles "falsy" values properly. [jddalton, kangax]
+* Ensure Object.isElement and Object.isHash handle "falsy" values properly. [jddalton, kangax]
 
 * Fix exiting test task on INT signal. [Samuel Lebeau]
 
@@ -22,7 +22,7 @@
 
 * Correct how Element#clonePosition sets element dimensions. Closes #11613. [#9 state:resolved] [azazel, jddalton, Nick Stakenburg]
 
-* Fix a bug in Element#getParentOffset that throw an error if passing document.documentElement. [jddalton]
+* Fix a bug in Element#getOffsetParent that throws an error when document.documentElement is passed. [jddalton]
 
 * Make Element#relativize preserve the dimensions/coordinates of absolutely positioned elements. Closes #9168. [dmmd, jddalton, kangax]
 
@@ -30,15 +30,15 @@
 
 * Fix Element#absolutize calculating dimensions incorrectly in IE7. Closes #9918. [kangax, pphilipp]
 
-* Force Element.extend() to skip XML nodes to avoid errors in IE, use the static Element methods instead. Closes #9709. [jddalton, yanick.rochon]
+* Force Element.extend() to skip XML nodes to avoid errors in IE. (Use the static Element methods instead.) Closes #9709. [jddalton, yanick.rochon]
 
 * Fix IE issue with Element#replace() removing the childNodes of the returned element. Closes #11225. [Rukawa, jddalton]
 
-* Fixed IE error in the Selector class that caused matching element ids to fail when the element wasn't attached to the document. Closes #9766. [jddalton, kangax, shazam]
+* Fixed IE error in the Selector class that caused matching element IDs to fail when the element wasn't attached to the document. Closes #9766. [jddalton, kangax, shazam]
 
-* Ensure tagName selectors return an array and not a nodeList. [jddalton]
+* Ensure tagName selectors return an array and not a DOM NodeList. [jddalton]
 
-* Make Object.isNumber return false for NaN, -infinity, and +infinity. Closes #10595. [foca, kangax]
+* Make Object.isNumber return false for NaN, -Infinity, and +Infinity. Closes #10595. [foca, kangax]
 
 * Fix Object.isHash throwing error when passed undefined variable in IE. [Viktor Kojouharov, jddalton]
 

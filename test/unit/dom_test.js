@@ -650,7 +650,7 @@ new Test.Unit.Runner({
       this.assert(typeof textnode['show'] == 'undefined');
     }, this);
     
-    // Don' extend XML documents
+    // Don't extend XML documents
     var xmlDoc, text = "<note><to>Sam</to></note>";
     try {
       (xmlDoc = new ActiveXObject("Microsoft.XMLDOM")).async = "false";

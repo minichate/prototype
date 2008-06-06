@@ -127,7 +127,7 @@ Form.Methods = {
 
     var submit = options.submit;
     delete options.submit;
-    options.parameters = form.serialize({submit:submit, hash:true});
+    options.parameters = form.serialize({ submit:submit, hash:true });
     
     if (params) {
       if (Object.isString(params)) params = params.toQueryParams();
