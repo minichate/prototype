@@ -64,11 +64,11 @@ Object.extend(String.prototype, {
   },
   
   extractScripts: (function() {
-  	var matchAll = new RegExp(Prototype.ScriptFragment, 'ig');
+    var matchAll = new RegExp(Prototype.ScriptFragment, 'ig');
     var matchOne = new RegExp(Prototype.ScriptFragment, 'i');
     var matchComments = new RegExp('<!--\\s*' + Prototype.ScriptFragment + '\\s*-->', 'i');
     
-  	return function() {
+    return function() {
       if (this.indexOf('<script') == -1) return [];
       return (this.replace(matchComments, '').match(matchAll) || []).map(function(scriptTag) {
         return (scriptTag.match(matchOne) || ['', ''])[1];
@@ -87,7 +87,7 @@ Object.extend(String.prototype, {
   },
 
   unescapeHTML: function() {
-    var div = new Element('div');
+    var div = document.createElement('div');
     // Safari requires the text nested inside another element to render correctly
     div.innerHTML = '<pre>' + this.stripTags() + '</pre>';
     div = div.firstChild;
@@ -228,7 +228,7 @@ Object.extend(String.prototype.escapeHTML, {
 
 String.prototype.escapeHTML.container.appendChild(String.prototype.escapeHTML.text);
 
-if (Prototype.Browser.IE) {
+if ('1\n2'.unescapeHTML() === '1\r2') {
   // IE converts all newlines to carriage returns so we swap them back
   String.prototype.unescapeHTML = String.prototype.unescapeHTML.wrap(function(proceed) {
     return proceed().replace(/\r/g, '\n')

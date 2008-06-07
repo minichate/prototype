@@ -1,9 +1,9 @@
 var Ajax = {
   getTransport: function() {
     return Try.these(
-      function() {return new XMLHttpRequest()},
       function() {return new ActiveXObject('Msxml2.XMLHTTP')},
-      function() {return new ActiveXObject('Microsoft.XMLHTTP')}
+      function() {return new ActiveXObject('Microsoft.XMLHTTP')},
+      function() {return new XMLHttpRequest()}
     ) || false;
   },
 
@@ -89,9 +89,10 @@ Ajax.Request = Class.create(Ajax.Base, {
     this.parameters = params;
 
     if (params = Object.toQueryString(params)) {
-      this.url += (this.url.include('?') ? '&' : '?') + params;
-      if (this.method == 'post' && 
-          /Konqueror|Safari|KHTML/.test(navigator.userAgent))
+      // when GET, append parameters to URL
+      if (this.method == 'get')
+        this.url += (this.url.include('?') ? '&' : '?') + params;
+      else if (/Konqueror|Safari|KHTML/.test(navigator.userAgent))
         params += '&_=';
     }
 
@@ -331,7 +332,7 @@ Ajax.Updater = Class.create(Ajax.Request, {
 
   updateContent: function(responseText) {
     var receiver = this.container[this.success() ? 'success' : 'failure'],
-        options = this.options;
+     options = this.options;
 
     if (!options.evalScripts) responseText = responseText.stripScripts();
 

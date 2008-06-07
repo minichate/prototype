@@ -49,11 +49,11 @@ if (!Node.ELEMENT_NODE) {
     tagName = tagName.toLowerCase();
     var cache = Element.cache;
     if (Prototype.Browser.IE && (attributes.name || attributes.type)) {
-	  tagName = '<' + tagName +
-	    (attributes.name ? ' name="' + attributes.name + '"' : '') +
-	      (attributes.type ? ' type="' + attributes.type + '"' : '') + '>';
-	  delete attributes.name; delete attributes.type;
-	  return Element.writeAttribute(document.createElement(tagName), attributes);
+      tagName = '<' + tagName +
+        (attributes.name ? ' name="' + attributes.name + '"' : '') +
+          (attributes.type ? ' type="' + attributes.type + '"' : '') + '>';
+      delete attributes.name; delete attributes.type;
+      return Element.writeAttribute(document.createElement(tagName), attributes);
     }
     if (!cache[tagName]) cache[tagName] = Element.extend(document.createElement(tagName));
     return Element.writeAttribute(cache[tagName].cloneNode(false), attributes);
@@ -76,20 +76,12 @@ Element.Methods = {
   },
 
   hide: function(element) {
-    element = $(element);
-    var originalDisplay = element.style.display;
-    if (originalDisplay && originalDisplay != 'none')
-      element._originalDisplay = originalDisplay;
-    element.style.display = 'none';
+    (element = $(element)).style.display = 'none';
     return element;
   },
   
   show: function(element) {
-    element = $(element); 
-    if (element._originalDisplay) { 
-      element.style.display = element._originalDisplay; 
-      element._originalDisplay = null; 
- 	} else element.style.display = '';
+    (element = $(element)).style.display = '';
     return element;
   },
 
@@ -601,7 +593,7 @@ Element.Methods = {
   },
   
   getOffsetParent: function(element) {
-  	element = $(element);
+    element = $(element);
     var op = element.offsetParent, docElement = document.documentElement;
     if (op && op != docElement) return $(op);
 
@@ -872,7 +864,8 @@ else if (Prototype.Browser.IE) {
         // accurate offsetTop and offsetLeft values for position: fixed.
         var offsetParent = Element.getOffsetParent(element),
          style = { position: 'relative' };
-        if (Element.getStyle(offsetParent, 'position') === 'fixed')
+        if (Element.getStyle(offsetParent, 'position') === 'fixed'
+         && !offsetParent.currentStyle.hasLayout)
           style.zoom = '1';
         
         Element.setStyle(element, style);

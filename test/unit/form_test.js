@@ -317,10 +317,7 @@ new Test.Unit.Runner({
     this.assertEqual("get", request.method);
     
     request = $("form").request({ method: "put", parameters: {val2: "hello"} });
-    var url = request.url;
-    
-    this.assert(url.include("fixtures/empty.js"));
-    this.assert(url.endsWith("_method=put") || url.endsWith("_method=put&_="));
+    this.assert(request.url.endsWith("fixtures/empty.js"));
     this.assertEqual(4, request.options.parameters['val1']);
     this.assertEqual('hello', request.options.parameters['val2']);
     this.assertEqual("post", request.method);

@@ -279,28 +279,7 @@ new Test.Unit.Runner({
     this.assert(!$('test-hide-visible').visible());
     $('test-hide-hidden').hide();
     this.assert(!$('test-hide-hidden').visible());
-    this.assertUndefined($('test-hide-visible')._originalDisplay);
   }, 
-  
-  testHideAndShowWithOtherInlineDisplayValue: function() {
-    $('test-visible-inline').hide();
-    this.assert(!$('test-visible-inline').visible());
-    this.assertEqual('inline', $('test-visible-inline')._originalDisplay);
-    $('test-visible-inline').show();
-    this.assert($('test-visible-inline').visible());
-    this.assertEqual('inline', $('test-visible-inline').style.display);
-    this.assertNull($('test-visible-inline')._originalDisplay);
-    
-    $('test-visible-inline').setStyle({display: 'block'});
-    
-    $('test-visible-inline').hide();
-    this.assert(!$('test-visible-inline').visible());
-    this.assertEqual('block', $('test-visible-inline')._originalDisplay);
-    $('test-visible-inline').show();
-    this.assert($('test-visible-inline').visible());
-    this.assertEqual('block', $('test-visible-inline').style.display);
-    this.assertNull($('test-visible-inline')._originalDisplay);      
- },
   
   testElementRemove: function(){
     $('removable').remove();
@@ -671,7 +650,7 @@ new Test.Unit.Runner({
       this.assert(typeof textnode['show'] == 'undefined');
     }, this);
     
-    // Don' extend XML documents
+    // Don't extend XML documents
     var xmlDoc, text = "<note><to>Sam</to></note>";
     try {
       (xmlDoc = new ActiveXObject("Microsoft.XMLDOM")).async = "false";
@@ -1125,7 +1104,7 @@ new Test.Unit.Runner({
       this.assertRespondsTo('fooBar', new Element('div'));
     }
     
-    //test IE setting "type" property of newly created button element
+    // test IE setting "type" property of newly created button element
     var button = new Element('button', {id:'button_type_test',type: 'reset'}); 
  	var form   = $('attributes_with_issues_form');   
  	var input  = $('attributes_with_issues_regular');    
@@ -1165,7 +1144,7 @@ new Test.Unit.Runner({
     this.assertIdentical(200, $('dimensions-display-none-pos-abs').getDimensions().width);
     
     // known failing issue
-    //this.assert($('dimensions-nestee').getDimensions().width <= 500, 'check for proper dimensions of hidden child elements');
+    // this.assert($('dimensions-nestee').getDimensions().width <= 500, 'check for proper dimensions of hidden child elements');
     
     $('dimensions-td').hide();
     this.assertIdentical(100, $('dimensions-td').getDimensions().height);
