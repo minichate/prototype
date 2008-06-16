@@ -1,3 +1,7 @@
+* Fix document.viewport.getDimensions() Opera version detect on Mac with parseFloat. [#163 state:resolved] [Sam Holman]
+
+* Fix Element cumulativeOffset, getDimensions, getOffsetParent, and clonePosition not working as expected. [#162 state:resolved] [jddalton, Nick Stakenburg]
+
 * Replace browser sniffing with capability detection in IE fork of String#unescapeHTML. [kangax]
 
 * Fix for IE7 to access local files via Ajax.Request. Closes #8259. [hagen.seifert, jddalton]

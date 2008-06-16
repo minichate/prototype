@@ -442,8 +442,8 @@ Element.Methods = {
   getDimensions: function(element) {
     element = $(element);
     var display = element.getStyle('display'),
-     dimensions = { width: element.clientWidth, height: element.clientHeight };
-    
+     dimensions = { width: element.offsetWidth, height: element.offsetHeight };
+
     // All width and height properties return 0 on elements with display:none,
     // so show the element temporarily
     if (display === "none" || display === null ||
@@ -456,8 +456,8 @@ Element.Methods = {
       els.visibility = 'hidden';
       els.position = 'absolute';
       els.display = 'block';
-      
-      dimensions = { width: element.clientWidth, height: element.clientHeight };
+
+      dimensions = { width: element.offsetWidth, height: element.offsetHeight };
 
       els.display = originalDisplay;
       els.position = originalPosition;
@@ -595,7 +595,8 @@ Element.Methods = {
   getOffsetParent: function(element) {
     element = $(element);
     var op = element.offsetParent, docElement = document.documentElement;
-    if (op && op != docElement) return $(op);
+    if (op && op !== docElement && Element.getStyle(op, 'position') !== 'static')
+      return $(op);
 
     while ((element = element.parentNode) && element !== docElement &&
      element !== document) {
@@ -612,40 +613,46 @@ Object.extend(Element.Methods, (function() {
     return parseFloat(Element.getStyle(element, style)) || 0;
   }
 
-  function getStyleDiff(element, source, style) {
-    return getNumericStyle(source, style) - getNumericStyle(element, style);
+  function getOffsetParent(element) {
+    var op = Element.getOffsetParent(element);
+    return (op === document.body && (element.sourceIndex < 0 ||
+      !element.offsetParent)) ? false : op;
   }
 
   function cloneDimension(element, source, dimension) {
-    var d = Element.getDimensions(source), style = { };
-    style[dimension] = d[dimension] + 'px';
-    
-    var styles = $w('margin padding'),
-     sides = (dimension === 'height') ? $w('top bottom') : $w('left right');
+    var style = { },
+     properties = (dimension === 'height') ?
+      $w('borderTopWidth marginTop paddingTop borderBottomWidth marginBottom paddingBottom') :
+      $w('borderLeftWidth marginLeft paddingLeft borderRightWidth marginRight paddingRight');
 
-    // Avoiding helpers like $w for speed
-    var property;
-    for (var i = 0; i < 2; i++) {
-      for (var j = 0; j < 2; j++) {
-        property = styles[i] + sides[j].capitalize();
-        style[property] = (getNumericStyle(element, property) + 
-         getStyleDiff(element, source, property)) + 'px';
+    style[dimension] = Element.getDimensions(source)[dimension];
+
+    // Adjust element border and padding for accurate dimensions and margins for accurate position
+    for (var i = 0, property, value; property = properties[i]; i++) {
+      if (property.indexOf('margin') === 0) {
+        value = getNumericStyle(element, property);
+        style[property] = value  + (getNumericStyle(source, property) - value) + 'px';
+      } else {
+        value = getNumericStyle(source, property);
+        style[property] = value + 'px';
+        style[dimension] -= value;
       }
     }
+    style[dimension] += 'px';
     Element.setStyle(element, style);
   }
   
   return {
     cumulativeScrollOffset: function(element) {
       element = $(element);
-      var valueT = 0, valueL = 0, endElement = document.body;
-
-      if (element === document.documentElement ||
-          element === endElement || element === document)
-        return Element._returnOffset(0, 0);
+      var valueT = 0, valueL = 0,
+       end = (Prototype.Browser.Opera && 
+        parseFloat(opera.version()) < 9.5 && element !== document.body) ?
+         document.documentElement : document;
 
       if (Element.getStyle(element, 'position') !== 'fixed') {
-        while ((element = element.parentNode) && element !== endElement) {
+        while ((element = element.parentNode) &&
+         element.nodeType == 1 && element !== end) {
           if (Element.getStyle(element, 'position') === 'fixed') break;
           valueT += element.scrollTop  || 0;
           valueL += element.scrollLeft || 0;
@@ -660,8 +667,8 @@ Object.extend(Element.Methods, (function() {
       do {
         valueT += element.offsetTop  || 0;
         valueL += element.offsetLeft || 0;
-      } while ((element = Element.getOffsetParent(element)) !== document.body);
-
+      } while (element = getOffsetParent(element));
+      
       return Element._returnOffset(valueL, valueT);
     },
 
@@ -671,8 +678,8 @@ Object.extend(Element.Methods, (function() {
       do {
         valueT += element.offsetTop  || 0;
         valueL += element.offsetLeft || 0;
-        element = Element.getOffsetParent(element);
-      } while (element !== document.body && 
+        element = getOffsetParent(element);
+      } while (element && element !== document.body && 
        Element.getStyle(element, 'position') === 'static');
 
       return Element._returnOffset(valueL, valueT);
@@ -687,10 +694,11 @@ Object.extend(Element.Methods, (function() {
         valueL += element.offsetLeft || 0;
 
         // Safari fix
-        op = Element.getOffsetParent(element);
+        op = getOffsetParent(element);
         if (op === document.body && Element.getStyle(element,
          'position') === 'absolute') break;
-      } while ((element = op) !== document.body);
+        
+      } while (element = op);
 
       var scrollOffset = Element.cumulativeScrollOffset(forElement);
       valueT -= scrollOffset.top;
@@ -726,29 +734,14 @@ Object.extend(Element.Methods, (function() {
         delta[1] -= document.body.offsetTop;
       }
 
-      // set dimensions
+      // find page position of source
+      var p = Element.viewportOffset(source);
+
+      // set dimensions and position
       if (options.setWidth)  cloneDimension(element, source, 'width');
       if (options.setHeight) cloneDimension(element, source, 'height');
-
-      // find page position of source
-      var p = Element.viewportOffset(source),
-      borderOffset = ['borderLeftWidth', 'borderTopWidth'].map(
-       function(style) { return getStyleDiff(element, source, style) });
-
-      if (options.setLeft) {
-        var left = p[0] - delta[0] + borderOffset[0];
-        if (options.offsetLeft) 
-          left += options.offsetLeft + getNumericStyle(element, 'paddingLeft');
-          
-        element.style.left = left + 'px';
-      }
-      if (options.setTop) {
-        var top = p[1] - delta[1] + borderOffset[1];
-        if (options.offsetTop)
-          top += options.offsetTop + getNumericStyle(element, 'paddingTop');
-          
-        element.style.top = top + 'px';
-      }
+      if (options.setLeft)   element.style.left  = (p[0] - delta[0] + options.offsetLeft) + 'px';
+      if (options.setTop)    element.style.top   = (p[1] - delta[1] + options.offsetTop)  + 'px';
       return element;
     }
   };
@@ -839,16 +832,8 @@ else if (Prototype.Browser.IE) {
     function(proceed, element) {
       element = $(element);
       // IE throws an error if element is not in document
-      try { element.offsetParent }
-      catch(e) { return $(document.body) }
-      
-      var position = Element.getStyle(element, 'position');
-      if (position !== 'static') return proceed(element);
-      Element.setStyle(element, { position: 'relative' });
-      
-      var value = proceed(element);
-      Element.setStyle(element, { position: position });
-      return value;
+      if (element.sourceIndex < 0) return $(document.body);
+      return proceed(element);
     }
   );
   
@@ -870,7 +855,7 @@ else if (Prototype.Browser.IE) {
         
         Element.setStyle(element, style);
         var value = proceed(element);
-        Element.setStyle(element, { position: position });
+        element.style.position = position;
         return value;
       }
     );
@@ -1332,7 +1317,7 @@ document.viewport = {
     $w('width height').each(function(d) {
       var D = d.capitalize();
       dimensions[d] = (B.WebKit && !document.evaluate) ? self['inner' + D] :
-        (B.Opera && opera.version() < 9.5) ? document.body['client' + D] : document.documentElement['client' + D];
+        (B.Opera && parseFloat(opera.version()) < 9.5) ? document.body['client' + D] : document.documentElement['client' + D];
     });
     return dimensions;
   },

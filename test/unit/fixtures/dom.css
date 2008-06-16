@@ -67,6 +67,11 @@ div.style-test { margin-left: 1px }
   width: 20em;
 }
 
+#dimensions-span {
+	font-size: 12px;
+	font-family: sans-serif;
+}
+
 #clonePositionSource {
   position: absolute;
   top: 10px;
