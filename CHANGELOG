@@ -1,3 +1,5 @@
+* Fix Prototype.Browser.Opera sniff and remove use of window.opera. [#176 state:resolved] [Tobie Langel]
+
 * Fix document.viewport.getDimensions() Opera version detect on Mac with parseFloat. [#163 state:resolved] [Sam Holman]
 
 * Fix Element cumulativeOffset, getDimensions, getOffsetParent, and clonePosition not working as expected. [#162 state:resolved] [jddalton, Nick Stakenburg]
