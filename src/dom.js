@@ -622,8 +622,8 @@ Object.extend(Element.Methods, (function() {
   function cloneDimension(element, source, dimension) {
     var style = { },
      properties = (dimension === 'height') ?
-      $w('borderTopWidth marginTop paddingTop borderBottomWidth marginBottom paddingBottom') :
-      $w('borderLeftWidth marginLeft paddingLeft borderRightWidth marginRight paddingRight');
+      ['borderTopWidth', 'marginTop', 'paddingTop', 'borderBottomWidth', 'marginBottom', 'paddingBottom'] :
+      ['borderLeftWidth', 'marginLeft', 'paddingLeft', 'borderRightWidth', 'marginRight', 'paddingRight'];
 
     style[dimension] = Element.getDimensions(source)[dimension];
 
