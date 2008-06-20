@@ -1,3 +1,5 @@
+* Changed misleading variable name "index" to "value" in Form.Element.Serializers.select(). [#180 state:resolved] [jjdalton]
+
 * Fix Prototype.Browser.Opera sniff and remove use of window.opera. [#176 state:resolved] [Tobie Langel]
 
 * Fix document.viewport.getDimensions() Opera version detect on Mac with parseFloat. [#163 state:resolved] [Sam Holman]
