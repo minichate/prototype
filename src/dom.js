@@ -594,6 +594,9 @@ Element.Methods = {
   
   getOffsetParent: function(element) {
     element = $(element);
+    // IE throws an error if element is not in document
+    if (element.sourceIndex < 1) return $(document.body);
+
     var op = element.offsetParent, docElement = document.documentElement;
     if (op && op !== docElement && Element.getStyle(op, 'position') !== 'static')
       return $(op);
@@ -603,7 +606,6 @@ Element.Methods = {
       if (Element.getStyle(element, 'position') !== 'static')
         return $(element);
     }
-
     return $(document.body);
   }
 };
@@ -826,17 +828,6 @@ if (Prototype.Browser.Opera) {
 }
 
 else if (Prototype.Browser.IE) {
-  // IE doesn't report offsets correctly for static elements, so we change them
-  // to "relative" to get the values, then change them back.  
-  Element.Methods.getOffsetParent = Element.Methods.getOffsetParent.wrap(
-    function(proceed, element) {
-      element = $(element);
-      // IE throws an error if element is not in document
-      if (element.sourceIndex < 0) return $(document.body);
-      return proceed(element);
-    }
-  );
-  
   $w('positionedOffset viewportOffset').each(function(method) {
     Element.Methods[method] = Element.Methods[method].wrap(
       function(proceed, element) {
