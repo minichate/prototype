@@ -16,8 +16,7 @@ var Prototype = {
     SelectorsAPI: !!document.querySelector,
     ElementExtensions: !!window.HTMLElement,
     SpecificElementExtensions: 
-      typeof document.createElement('div')['__proto__'] == 'object' &&
-      typeof document.createElement('form')['__proto__'] == 'object' &&
+      document.createElement('div')['__proto__'] &&
       document.createElement('div')['__proto__'] !== 
         document.createElement('form')['__proto__']
   },
