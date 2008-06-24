@@ -1159,9 +1159,6 @@ new Test.Unit.Runner({
     $('dimensions-table').hide();
     this.assertIdentical(100, $('dimensions-table').getDimensions().height);
     this.assertIdentical(200, $('dimensions-table').getDimensions().width);
-    
-    this.assertIdentical(38, $('dimensions-span').getDimensions().width);
-    this.assertIdentical(15, $('dimensions-span').getDimensions().height);
   },
   
   testElementClonePosition: function() {
