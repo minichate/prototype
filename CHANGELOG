@@ -6,6 +6,8 @@
 
 * Remove the use of indexOf in Emumerable#include because Array#indexOf uses strict strict equality. [#183 state:resolved] [Garrett Smith, jjdalton]
 
+* Make Prototype.BrowserFeatures detections more accurate by type checking. [#182 state:resolved] [Garrett Smith, jjdalton]
+
 * Changed misleading variable name "index" to "value" in Form.Element.Serializers.select(). [#180 state:resolved] [jjdalton]
 
 * Fix Prototype.Browser.Opera sniff and remove use of window.opera. [#176 state:resolved] [Tobie Langel]
