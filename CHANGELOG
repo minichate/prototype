@@ -1,3 +1,5 @@
+* Make Element._attributeTranslations.read.values._getEv use Function.prototype.toString and return value only if wrapped in an anonymous function. [#184 state:resolved] [Garrett Smith, jddalton]
+
 * Remove the use of indexOf in Emumerable#include because Array#indexOf uses strict strict equality. [#183 state:resolved] [Garrett Smith, jjdalton]
 
 * Make Prototype.BrowserFeatures.SpecificElementExtensions more accurate by checking typeof for div and form elements. [#182 state:resolved] [Garrett Smith, jjdalton]
