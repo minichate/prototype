@@ -928,7 +928,7 @@ else if (Prototype.Browser.IE) {
       attribute = element.getAttribute(attribute);
       if (!Object.isFunction(attribute)) return null;
       var source = Function.prototype.toString.call(attribute);
-      return source.indexOf('function anonymous()\n{\n') > -1 ? source.slice(23, -2) : null;
+      return source.indexOf('function anonymous()\n{\n') === 0 ? source.slice(23, -2) : null;
     },
     
     style: function(element) {
