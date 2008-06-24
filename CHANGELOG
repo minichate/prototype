@@ -2,8 +2,6 @@
 
 * Make Function#argumentNames should use Function.prototype.toString. [#186 state:resolved] [Garrett Smith, jddalton, kangax]
 
-* Make Element#visible use Element#getStyle so it can read inherited display values. [#185 state:resolved] [Garrett Smith, jddalton]
-
 * Make Element._attributeTranslations.read.values._getEv use Function.prototype.toString and return value only if wrapped in an anonymous function. [#184 state:resolved] [Garrett Smith, jddalton]
 
 * Remove the use of indexOf in Emumerable#include because Array#indexOf uses strict strict equality. [#183 state:resolved] [Garrett Smith, jjdalton]
