@@ -1,3 +1,5 @@
+* Make the WebKit branch of $A use a better NodeList detection. [#187 state:resolved] [Garrett Smith, jddalton]
+
 * Make Function#argumentNames should use Function.prototype.toString. [#186 state:resolved] [Garrett Smith, jddalton, kangax]
 
 * Make Element#visible use Element#getStyle so it can read inherited display values. [#185 state:resolved] [Garrett Smith, jddalton]
