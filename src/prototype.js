@@ -12,14 +12,13 @@ var Prototype = {
   },
 
   BrowserFeatures: {
-    XPath: typeof document.evaluate === 'function',
-    SelectorsAPI: typeof document.querySelector === 'function',
-    ElementExtensions: typeof window.HTMLElement === 'function' || typeof window.HTMLElement === 'object',
-    SpecificElementExtensions: (function() {
-      var proto1 = document.createElement('div')['__proto__'], proto2 = document.createElement('form')['__proto__'];
-      return proto1 && proto2 && typeof proto1.appendChild === 'function' &&
-        typeof proto2.appendChild === 'function' && proto1 !== proto2;
-    })()
+    XPath: !!document.evaluate,
+    SelectorsAPI: !!document.querySelector,
+    ElementExtensions: !!window.HTMLElement,
+    SpecificElementExtensions: 
+      document.createElement('div')['__proto__'] &&
+      document.createElement('div')['__proto__'] !== 
+        document.createElement('form')['__proto__']
   },
 
   ScriptFragment: '<script[^>]*>([^\\x00]*?)<\/script>',
