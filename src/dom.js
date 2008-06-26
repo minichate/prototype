@@ -617,7 +617,7 @@ Object.extend(Element.Methods, (function() {
 
   function getOffsetParent(element) {
     var op = Element.getOffsetParent(element);
-    return (op === document.body && (element.sourceIndex < 0 ||
+    return (op === document.body && (element.sourceIndex < 1 ||
       !element.offsetParent)) ? false : op;
   }
 
@@ -742,8 +742,8 @@ Object.extend(Element.Methods, (function() {
       // set dimensions and position
       if (options.setWidth)  cloneDimension(element, source, 'width');
       if (options.setHeight) cloneDimension(element, source, 'height');
-      if (options.setLeft)   element.style.left  = (p[0] - delta[0] + options.offsetLeft) + 'px';
-      if (options.setTop)    element.style.top   = (p[1] - delta[1] + options.offsetTop)  + 'px';
+      if (options.setLeft)   element.style.left = (p[0] - delta[0] + options.offsetLeft) + 'px';
+      if (options.setTop)    element.style.top  = (p[1] - delta[1] + options.offsetTop)  + 'px';
       return element;
     }
   };
