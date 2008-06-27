@@ -1,20 +1,22 @@
 * Make the WebKit branch of $A use a better NodeList detection. [#187 state:resolved] [Garrett Smith, jddalton]
 
-* Make Function#argumentNames should use Function.prototype.toString. [#186 state:resolved] [Garrett Smith, jddalton, kangax]
-
 * Make Element._attributeTranslations.read.values._getEv use Function.prototype.toString and return value only if wrapped in an anonymous function. [#184 state:resolved] [Garrett Smith, jddalton]
-
-* Changed misleading variable name "index" to "value" in Form.Element.Serializers.select(). [#180 state:resolved] [jjdalton]
 
 * Fix Prototype.Browser.Opera sniff and remove use of window.opera. [#176 state:resolved] [Tobie Langel]
 
-* Fix document.viewport.getDimensions() Opera version detect on Mac with parseFloat. [#163 state:resolved] [Sam Holman]
-
 * Fix Element cumulativeOffset, getDimensions, getOffsetParent, and clonePosition not working as expected. [#162 state:resolved] [jddalton, Nick Stakenburg]
+
+* Make Function#argumentNames use Function.prototype.toString. [Garrett Smith, jddalton, kangax]
+
+* Rename variable in Form.Element.Serializers.select. [jddalton]
 
 * Replace browser sniffing with capability detection in IE fork of String#unescapeHTML. [kangax]
 
-* Fix issue where Opera gets confused by complex selectors in $$. [Andrew Dupont, Paulo Pereira, Andrea Baron, jddalton] 
+* Coerce Opera's version string into a number whenever we need to sniff. [Sam Holman, jddalton]
+
+* Amend previous checkin to restrict fix to Opera 9.5. [Andrew Dupont]
+
+* Fix issue where Opera gets confused by complex selectors in $$. [Paulo Pereira, Andrea Baron, jddalton] 
 
 * Fix for IE7 to access local files via Ajax.Request. Closes #8259. [hagen.seifert, jddalton]
 

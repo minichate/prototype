@@ -253,17 +253,17 @@ Form.Element.Serializers = {
       return this[element.type == 'select-one' ? 
         'selectOne' : 'selectMany'](element);
     else {
-      var opt, v, single = !Object.isArray(value);
+      var opt, currentValue, single = !Object.isArray(value);
       for (var i = 0, length = element.length; i < length; i++) {
         opt = element.options[i];
-        v = this.optionValue(opt);
+        currentValue = this.optionValue(opt);
         if (single) {
-          if (v == value) {
+          if (currentValue == value) {
             opt.selected = true;
             return;
           }
         }
-        else opt.selected = value.include(v);
+        else opt.selected = value.include(currentValue);
       }
     }
   },
