@@ -85,6 +85,9 @@ var Enumerable = {
   },
   
   include: function(object) {
+    if (Object.isFunction(this.indexOf))
+      if (this.indexOf(object) != -1) return true;
+
     var found = false;
     this.each(function(value) {
       if (value == object) {

@@ -66,7 +66,7 @@ Element.cache = { };
 
 Element.Methods = {
   visible: function(element) {
-    return Element.getStyle(element, 'display') !== 'none';
+    return $(element).style.display != 'none';
   },
   
   toggle: function(element) {
