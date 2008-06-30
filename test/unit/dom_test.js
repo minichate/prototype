@@ -1162,7 +1162,6 @@ new Test.Unit.Runner({
   },
   
   testElementClonePosition: function() {
-  
     var target = $('clonePositionTarget'),
      source = $('clonePositionSource');
     
@@ -1173,7 +1172,7 @@ new Test.Unit.Runner({
     
     this.assertIdentical(source.cumulativeOffset().top  + 20, target.cumulativeOffset().top);
     this.assertIdentical(source.cumulativeOffset().left + 30, target.cumulativeOffset().left);
-    
+        
     target.clonePosition(source);
     this.assertIdentical(source.getHeight(), target.getHeight());
     this.assertIdentical(source.getWidth(), target.getWidth());
@@ -1319,7 +1318,7 @@ new Test.Unit.Runner({
   },
   
   testViewportOffset: function() {
-    window.scrollTo(0,0);
+    window.scrollTo(0, 0);
     this.assertEnumEqual([10,10],
       $('body_absolute').viewportOffset());
     this.assertEnumEqual([20,20],
