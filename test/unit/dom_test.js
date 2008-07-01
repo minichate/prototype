@@ -1365,6 +1365,7 @@ new Test.Unit.Runner({
     // invoking on "absolute" positioned element should return element 
     var element = $('absolute_fixed_undefined').setStyle({position: 'absolute'});
     this.assertEqual(element, element.absolutize());
+    element.style.position = '';
     
     // test relatively positioned element with no height specified for IE7
     var element = $('absolute_relative'),
@@ -1380,18 +1381,19 @@ new Test.Unit.Runner({
     // invoking on "relative" positioned element should return element
     var element = $('absolute_fixed_undefined').setStyle({position: 'relative'});
     this.assertEqual(element, element.relativize());
+    element.style.position = '';
     
-    var assertPositionEqual = function(modifier, element) {
-      element = $(element);
-      var offsets = element.cumulativeOffset();
-      Element[modifier](element);
-      this.assertEnumEqual(offsets, element.cumulativeOffset());
-    }.bind(this);
-
-    var testRelativize = assertPositionEqual.curry('relativize');
-    testRelativize('notInlineAbsoluted');
-    testRelativize('inlineAbsoluted');
-    testRelativize('absolute_absolute');
+    // test relativize on elements that have not called absolutize first
+    var absoluteElements = $w('notInlineAbsoluted inlineAbsoluted absolute_absolute');
+    absoluteElements.each(function(id) {
+      var passed = true;
+      try {
+        $(id).relativize();
+      } catch(e) {
+        passed = false;
+      }
+      this.assertEqual(false, passed);
+    }, this);
   },
   
   testViewportDimensions: function() {

@@ -515,34 +515,43 @@ Element.Methods = {
 
   absolutize: function(element) {
     element = $(element);
-    if (Element.getStyle(element, 'position') == 'absolute') return element;
+    if (Element.getStyle(element, 'position') === 'absolute')
+      return element;
 
-    var offsets = Element.positionedOffset(element),
-     dimensions = Element.getDimensions(element),
-     top = offsets.top,
-     left = offsets.left,
-     width = dimensions.width,
-     height = dimensions.height;
-
+    var offsets = Element.positionedOffset(element);
+    var dimensions = Element.getDimensions(element);
+    var properties, dim, dims = ['width', 'height'];
+    
+    for(var i = 0; dim = dims[i]; i++) {
+      if (dim === 'height') {
+        properties = $w('borderTopWidth padingTop borderBottomWidth paddingBottom');
+      } else {
+        properties = $w('borderLeftWidth paddingLeft borderRightWidth paddingRight');
+      }
+      dimensions[dim] = Math.max(0, properties.inject(dimensions[dim], function(memo, property) {
+        return memo - (parseFloat(Element.getStyle(element, property), 10) || 0);
+      }));
+    }
+    
     Object.extend(element, {
-      _originalLeft:       left - parseFloat(element.style.left || 0),
-      _originalTop:        top  - parseFloat(element.style.top  || 0),
-      _originalWidth:      Element.getStyle(element, 'width'),
-      _originalHeight:     Element.getStyle(element, 'height'),
-      _originalMarginTop:  Element.getStyle(element, 'marginTop'),
-      _originalMarginLeft: Element.getStyle(element, 'marginLeft')
-    });
-
-    Element.setStyle(element, {
-      position:   'absolute',
-      top:        top + 'px',
-      left:       left + 'px',
-      width:      width + 'px',
-      height:     height + 'px',
-      marginTop:  '0px',
-      marginLeft: '0px'
+      _originalLeft:       offsets.left - parseFloat(element.style.left || 0),
+      _originalTop:        offsets.top  - parseFloat(element.style.top  || 0),
+      _originalWidth:      element.style.width,
+      _originalHeight:     element.style.height,   
+      _originalMarginTop:  element.style.marginTop,
+      _originalMarginLeft: element.style.marginLeft
     });
     
+    Element.setStyle(element, {
+      marginTop:  '0px',
+      marginLeft: '0px',
+      position:   'absolute',
+      top:        offsets.top  + 'px',
+      left:       offsets.left + 'px',
+      width:      dimensions.width  + 'px',
+      height:     dimensions.height + 'px'
+    });
+
     return element;
   },
 
@@ -550,43 +559,22 @@ Element.Methods = {
     element = $(element);
     if (Element.getStyle(element, 'position') === 'relative')
       return element;
+    
+    if (Object.isUndefined(element._originalTop))
+      throw new Error("Element#absolutize must be called first.");
+    
+    Element.setStyle(element, { position: 'relative' });
 
-    if (!element._originalTop) {
-      /* fix bizarre IE position issue with empty elements */
-      var isBuggy = element.outerHTML && element.innerHTML.blank();
-      if (isBuggy) element.innerHTML = '\x00';
-      
-      Object.extend(element, {
-        _originalTop:        element.offsetTop  || 0,
-        _originalLeft:       element.offsetLeft || 0,
-        _originalWidth:      Element.getStyle(element, 'width'),
-        _originalHeight:     Element.getStyle(element, 'height'),
-        _originalMarginTop:  Element.getStyle(element, 'marginTop'),
-        _originalMarginLeft: Element.getStyle(element, 'marginLeft')
-      });
-      
-      if (isBuggy) element.innerHTML = '';
-    }
+    var top  = parseFloat(element.style.top  || 0) - (element._originalTop  || 0);
+    var left = parseFloat(element.style.left || 0) - (element._originalLeft || 0);
     
     Element.setStyle(element, {
-      position:   'relative',
-      width:      element._originalWidth,
-      height:     element._originalHeight,
+      top:        top  + 'px',
+      left:       left + 'px',
+      marginLeft: element._originalMarginLeft,
       marginTop:  element._originalMarginTop,
-      marginLeft: element._originalMarginLeft
-    });
-
-    var offsets = element.positionedOffset(),
-     top  = element._originalTop  - offsets.top,
-     left = element._originalLeft - offsets.left;
-    
-    var isAuto = /^(auto|)$/;  
-    if (!isAuto.test(element.style.top))  top  += element._originalTop;
-    if (!isAuto.test(element.style.left)) left += element._originalLeft;
-    
-    Element.setStyle(element, {
-      top:  top  + 'px',
-      left: left + 'px'
+      width:      element._originalHeight,
+      height:     element._originalWidth
     });
     
     return element;
