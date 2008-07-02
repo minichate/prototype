@@ -610,7 +610,8 @@ Object.extend(Element.Methods, (function() {
   function getOffsetParent(element) {
     var op = Element.getOffsetParent(element);
     if (op === document.body &&
-     (element.sourceIndex < 1 || !element.offsetParent)) {
+       (element.sourceIndex < 1 || !element.offsetParent || 
+        element.offsetParent === document.documentElement)) {
       return false;
     }
     return op;
