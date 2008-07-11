@@ -442,8 +442,8 @@ Element.Methods = {
   getDimensions: function(element) {
     element = $(element);
     var display = element.getStyle('display'),
-     dimensions = { width: element.clientWidth, height: element.clientHeight };
-    
+     dimensions = { width: element.offsetWidth, height: element.offsetHeight };
+
     // All width and height properties return 0 on elements with display:none,
     // so show the element temporarily
     if (display === "none" || display === null ||
@@ -456,8 +456,8 @@ Element.Methods = {
       els.visibility = 'hidden';
       els.position = 'absolute';
       els.display = 'block';
-      
-      dimensions = { width: element.clientWidth, height: element.clientHeight };
+
+      dimensions = { width: element.offsetWidth, height: element.offsetHeight };
 
       els.display = originalDisplay;
       els.position = originalPosition;
@@ -475,7 +475,7 @@ Element.Methods = {
       element.style.position = 'relative';
       // Opera returns the offset relative to the positioning context, when an
       // element is position relative but top and left have not been defined
-      if (window.opera) {
+      if (Prototype.Browser.Opera) {
         element.style.top = 0;
         element.style.left = 0;
       }  
@@ -515,34 +515,43 @@ Element.Methods = {
 
   absolutize: function(element) {
     element = $(element);
-    if (Element.getStyle(element, 'position') == 'absolute') return element;
+    if (Element.getStyle(element, 'position') === 'absolute')
+      return element;
 
-    var offsets = Element.positionedOffset(element),
-     dimensions = Element.getDimensions(element),
-     top = offsets.top,
-     left = offsets.left,
-     width = dimensions.width,
-     height = dimensions.height;
-
+    var offsets = Element.positionedOffset(element);
+    var dimensions = Element.getDimensions(element);
+    var properties, dim, dims = ['width', 'height'];
+    
+    for(var i = 0; dim = dims[i]; i++) {
+      if (dim === 'height') {
+        properties = $w('borderTopWidth padingTop borderBottomWidth paddingBottom');
+      } else {
+        properties = $w('borderLeftWidth paddingLeft borderRightWidth paddingRight');
+      }
+      dimensions[dim] = Math.max(0, properties.inject(dimensions[dim], function(memo, property) {
+        return memo - (parseFloat(Element.getStyle(element, property), 10) || 0);
+      }));
+    }
+    
     Object.extend(element, {
-      _originalLeft:       left - parseFloat(element.style.left || 0),
-      _originalTop:        top  - parseFloat(element.style.top  || 0),
-      _originalWidth:      Element.getStyle(element, 'width'),
-      _originalHeight:     Element.getStyle(element, 'height'),
-      _originalMarginTop:  Element.getStyle(element, 'marginTop'),
-      _originalMarginLeft: Element.getStyle(element, 'marginLeft')
-    });
-
-    Element.setStyle(element, {
-      position:   'absolute',
-      top:        top + 'px',
-      left:       left + 'px',
-      width:      width + 'px',
-      height:     height + 'px',
-      marginTop:  '0px',
-      marginLeft: '0px'
+      _originalLeft:       offsets.left - parseFloat(element.style.left || 0),
+      _originalTop:        offsets.top  - parseFloat(element.style.top  || 0),
+      _originalWidth:      element.style.width,
+      _originalHeight:     element.style.height,   
+      _originalMarginTop:  element.style.marginTop,
+      _originalMarginLeft: element.style.marginLeft
     });
     
+    Element.setStyle(element, {
+      marginTop:  '0px',
+      marginLeft: '0px',
+      position:   'absolute',
+      top:        offsets.top  + 'px',
+      left:       offsets.left + 'px',
+      width:      dimensions.width  + 'px',
+      height:     dimensions.height + 'px'
+    });
+
     return element;
   },
 
@@ -550,43 +559,22 @@ Element.Methods = {
     element = $(element);
     if (Element.getStyle(element, 'position') === 'relative')
       return element;
+    
+    if (Object.isUndefined(element._originalTop))
+      throw new Error("Element#absolutize must be called first.");
+    
+    Element.setStyle(element, { position: 'relative' });
 
-    if (!element._originalTop) {
-      /* fix bizarre IE position issue with empty elements */
-      var isBuggy = element.outerHTML && element.innerHTML.blank();
-      if (isBuggy) element.innerHTML = '\x00';
-      
-      Object.extend(element, {
-        _originalTop:        element.offsetTop  || 0,
-        _originalLeft:       element.offsetLeft || 0,
-        _originalWidth:      Element.getStyle(element, 'width'),
-        _originalHeight:     Element.getStyle(element, 'height'),
-        _originalMarginTop:  Element.getStyle(element, 'marginTop'),
-        _originalMarginLeft: Element.getStyle(element, 'marginLeft')
-      });
-      
-      if (isBuggy) element.innerHTML = '';
-    }
+    var top  = parseFloat(element.style.top  || 0) - (element._originalTop  || 0);
+    var left = parseFloat(element.style.left || 0) - (element._originalLeft || 0);
     
     Element.setStyle(element, {
-      position:   'relative',
-      width:      element._originalWidth,
-      height:     element._originalHeight,
+      top:        top  + 'px',
+      left:       left + 'px',
+      marginLeft: element._originalMarginLeft,
       marginTop:  element._originalMarginTop,
-      marginLeft: element._originalMarginLeft
-    });
-
-    var offsets = element.positionedOffset(),
-     top  = element._originalTop  - offsets.top,
-     left = element._originalLeft - offsets.left;
-    
-    var isAuto = /^(auto|)$/;  
-    if (!isAuto.test(element.style.top))  top  += element._originalTop;
-    if (!isAuto.test(element.style.left)) left += element._originalLeft;
-    
-    Element.setStyle(element, {
-      top:  top  + 'px',
-      left: left + 'px'
+      width:      element._originalHeight,
+      height:     element._originalWidth
     });
     
     return element;
@@ -594,15 +582,22 @@ Element.Methods = {
   
   getOffsetParent: function(element) {
     element = $(element);
+    
+    // IE throws an error if the element is not in the document.
+    if (element.sourceIndex < 1) return $(document.body);
+    
     var op = element.offsetParent, docElement = document.documentElement;
-    if (op && op != docElement) return $(op);
-
+    if (op && op !== docElement &&
+     Element.getStyle(op, 'position') !== 'static') {
+      return $(op);
+    }
+    
     while ((element = element.parentNode) && element !== docElement &&
      element !== document) {
       if (Element.getStyle(element, 'position') !== 'static')
         return $(element);
     }
-
+    
     return $(document.body);
   }
 };
@@ -612,40 +607,60 @@ Object.extend(Element.Methods, (function() {
     return parseFloat(Element.getStyle(element, style)) || 0;
   }
 
-  function getStyleDiff(element, source, style) {
-    return getNumericStyle(source, style) - getNumericStyle(element, style);
+  function getOffsetParent(element) {
+    var op = Element.getOffsetParent(element);
+    if (op === document.body &&
+       (element.sourceIndex < 1 || !element.offsetParent || 
+        element.offsetParent === document.documentElement)) {
+      return false;
+    }
+    return op;
   }
 
   function cloneDimension(element, source, dimension) {
-    var d = Element.getDimensions(source), style = { };
-    style[dimension] = d[dimension] + 'px';
+    var style = { }, properties;
     
-    var styles = $w('margin padding'),
-     sides = (dimension === 'height') ? $w('top bottom') : $w('left right');
-
-    // Avoiding helpers like $w for speed
-    var property;
-    for (var i = 0; i < 2; i++) {
-      for (var j = 0; j < 2; j++) {
-        property = styles[i] + sides[j].capitalize();
-        style[property] = (getNumericStyle(element, property) + 
-         getStyleDiff(element, source, property)) + 'px';
+    if (dimension === 'height') {
+      properties = $w('borderTopWidth marginTop paddingTop ' +
+       'borderBottomWidth marginBottom paddingBottom');
+    } else {
+      properties = $w('borderLeftWidth marginLeft paddingLeft ' +
+       'borderRightWidth marginRight paddingRight');
+    }
+    
+    style[dimension] = Element.getDimensions(source)[dimension];
+    
+    // Adjust element border and padding for accurate dimensions and
+    // margins for accurate position.    
+    for (var i = 0, property, value; property = properties[i]; i++) {
+      if (property.include('margin')) {
+        value = getNumericStyle(element, property);
+        style[property] = value + (getNumericStyle(source, property) -
+         value) + 'px';
+      } else {
+        value = getNumericStyle(source, property);
+        style[property] = value + 'px';
+        style[dimension] -= value;
       }
     }
+    style[dimension] += 'px';
     Element.setStyle(element, style);
   }
   
   return {
     cumulativeScrollOffset: function(element) {
       element = $(element);
-      var valueT = 0, valueL = 0, endElement = document.body;
-
-      if (element === document.documentElement ||
-          element === endElement || element === document)
-        return Element._returnOffset(0, 0);
-
+      var valueT = 0, valueL = 0, end = document;
+      
+      if (Prototype.Browser.Opera && 
+       parseFloat(window.opera.version()) < 9.5 &&
+       element !== document.body) {         
+        end = document.documentElement;
+      }
+      
       if (Element.getStyle(element, 'position') !== 'fixed') {
-        while ((element = element.parentNode) && element !== endElement) {
+        while ((element = element.parentNode) &&
+         element.nodeType === 1 && element !== end) {
           if (Element.getStyle(element, 'position') === 'fixed') break;
           valueT += element.scrollTop  || 0;
           valueL += element.scrollLeft || 0;
@@ -660,7 +675,7 @@ Object.extend(Element.Methods, (function() {
       do {
         valueT += element.offsetTop  || 0;
         valueL += element.offsetLeft || 0;
-      } while ((element = Element.getOffsetParent(element)) !== document.body);
+      } while (element = getOffsetParent(element));
 
       return Element._returnOffset(valueL, valueT);
     },
@@ -671,9 +686,9 @@ Object.extend(Element.Methods, (function() {
       do {
         valueT += element.offsetTop  || 0;
         valueL += element.offsetLeft || 0;
-        element = Element.getOffsetParent(element);
-      } while (element !== document.body && 
-       Element.getStyle(element, 'position') === 'static');
+        element = getOffsetParent(element);
+      } while (element && element !== document.body &&
+        Element.getStyle(element, 'position') === 'static');
 
       return Element._returnOffset(valueL, valueT);
     },
@@ -687,10 +702,10 @@ Object.extend(Element.Methods, (function() {
         valueL += element.offsetLeft || 0;
 
         // Safari fix
-        op = Element.getOffsetParent(element);
+        op = getOffsetParent(element);
         if (op === document.body && Element.getStyle(element,
          'position') === 'absolute') break;
-      } while ((element = op) !== document.body);
+      } while (element = op);
 
       var scrollOffset = Element.cumulativeScrollOffset(forElement);
       valueT -= scrollOffset.top;
@@ -725,30 +740,18 @@ Object.extend(Element.Methods, (function() {
         delta[0] -= document.body.offsetLeft;
         delta[1] -= document.body.offsetTop;
       }
+      
+      // find page position of source
+      var p = Element.viewportOffset(source);
 
-      // set dimensions
+      // set dimensions and position
       if (options.setWidth)  cloneDimension(element, source, 'width');
       if (options.setHeight) cloneDimension(element, source, 'height');
+      if (options.setLeft)
+        element.style.left = (p[0] - delta[0] + options.offsetLeft + 'px');
+      if (options.setTop)
+        element.style.top  = (p[1] - delta[1] + options.offsetTop  + 'px');
 
-      // find page position of source
-      var p = Element.viewportOffset(source),
-      borderOffset = ['borderLeftWidth', 'borderTopWidth'].map(
-       function(style) { return getStyleDiff(element, source, style) });
-
-      if (options.setLeft) {
-        var left = p[0] - delta[0] + borderOffset[0];
-        if (options.offsetLeft) 
-          left += options.offsetLeft + getNumericStyle(element, 'paddingLeft');
-          
-        element.style.left = left + 'px';
-      }
-      if (options.setTop) {
-        var top = p[1] - delta[1] + borderOffset[1];
-        if (options.offsetTop)
-          top += options.offsetTop + getNumericStyle(element, 'paddingTop');
-          
-        element.style.top = top + 'px';
-      }
       return element;
     }
   };
@@ -835,23 +838,6 @@ if (Prototype.Browser.Opera) {
 else if (Prototype.Browser.IE) {
   // IE doesn't report offsets correctly for static elements, so we change them
   // to "relative" to get the values, then change them back.  
-  Element.Methods.getOffsetParent = Element.Methods.getOffsetParent.wrap(
-    function(proceed, element) {
-      element = $(element);
-      // IE throws an error if element is not in document
-      try { element.offsetParent }
-      catch(e) { return $(document.body) }
-      
-      var position = Element.getStyle(element, 'position');
-      if (position !== 'static') return proceed(element);
-      Element.setStyle(element, { position: 'relative' });
-      
-      var value = proceed(element);
-      Element.setStyle(element, { position: position });
-      return value;
-    }
-  );
-  
   $w('positionedOffset viewportOffset').each(function(method) {
     Element.Methods[method] = Element.Methods[method].wrap(
       function(proceed, element) {
@@ -870,7 +856,7 @@ else if (Prototype.Browser.IE) {
         
         Element.setStyle(element, style);
         var value = proceed(element);
-        Element.setStyle(element, { position: position });
+        element.style.position = position;
         return value;
       }
     );
@@ -950,7 +936,9 @@ else if (Prototype.Browser.IE) {
     
     _getEv: function(element, attribute) {
       attribute = element.getAttribute(attribute);
-      return attribute ? attribute.toString().slice(23, -2) : null;
+      if (!Object.isFunction(attribute)) return null;
+      var source = Function.prototype.toString.call(attribute);
+      return source.indexOf('function anonymous()\n{\n') === 0 ? source.slice(23, -2) : null;
     },
     
     style: function(element) {
@@ -1331,8 +1319,15 @@ document.viewport = {
     var dimensions = { }, B = Prototype.Browser;
     $w('width height').each(function(d) {
       var D = d.capitalize();
-      dimensions[d] = (B.WebKit && !document.evaluate) ? self['inner' + D] :
-        (B.Opera && opera.version() < 9.5) ? document.body['client' + D] : document.documentElement['client' + D];
+      if (B.WebKit && !document.evaluate) {
+        // Safari <3.0 needs self.innerWidth/Height
+        dimensions[d] = self['inner' + D];
+      } else if (B.Opera && parseFloat(window.opera.version()) < 9.5) {
+        // Opera <9.5 needs document.body.clientWidth/Height
+        dimensions[d] = document.body['client' + D]
+      } else {
+        dimensions[d] = document.documentElement['client' + D];
+      }
     });
     return dimensions;
   },

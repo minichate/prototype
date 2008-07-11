@@ -226,7 +226,8 @@ Object.extend(String.prototype.escapeHTML, {
   text: document.createTextNode('')
 });
 
-String.prototype.escapeHTML.container.appendChild(String.prototype.escapeHTML.text);
+String.prototype.escapeHTML.container.appendChild(
+  String.prototype.escapeHTML.text);
 
 if ('1\n2'.unescapeHTML() === '1\r2') {
   // IE converts all newlines to carriage returns so we swap them back

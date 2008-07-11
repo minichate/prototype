@@ -9,8 +9,11 @@ function $A(iterable) {
 if (Prototype.Browser.WebKit) {
   $A = function(iterable) {
     if (!iterable) return [];
-    if (!(Object.isFunction(iterable) && iterable == '[object NodeList]') &&
-        iterable.toArray) return iterable.toArray();
+    // A NodeList must be a function with an item property that is also a function
+    // and a length property of type 'number' [detection from google-doctype]
+    if (!(typeof iterable === 'function' && typeof iterable.length === 'number' &&
+        typeof iterable.item === 'function') && iterable.toArray)
+      return iterable.toArray();
     var length = iterable.length || 0, results = new Array(length);
     while (length--) results[length] = iterable[length];
     return results;
