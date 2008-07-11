@@ -1,3 +1,5 @@
+* Create local repository
+
 * Replace browser sniffing with capability detection in IE fork of String#unescapeHTML. [kangax]
 
 * Fix issue where Ajax.Request does not work with local files in IE7. (jddalton)
