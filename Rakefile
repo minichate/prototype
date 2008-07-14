@@ -20,6 +20,7 @@ task :dist do
       dist << Protodoc::Preprocessor.new('prototype.js')
     end
   end
+  cp File.join(PROTOTYPE_DIST_DIR, 'prototype.js'), File.join(PKG_NOREX_JS, 'prototype.js')
 end
 
 desc "Builds the updating helper."
@@ -32,7 +33,6 @@ task :dist_helper do
       dist << Protodoc::Preprocessor.new('prototype_update_helper.js')
     end
   end
-  cp File.join(PROTOTYPE_DIST_DIR, 'prototype.js'), File.join(PKG_NOREX_JS, 'prototype.js')
 end
 
 Rake::PackageTask.new('prototype', PROTOTYPE_VERSION) do |package|
