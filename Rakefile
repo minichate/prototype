@@ -6,8 +6,9 @@ PROTOTYPE_SRC_DIR  = File.join(PROTOTYPE_ROOT, 'src')
 PROTOTYPE_DIST_DIR = File.join(PROTOTYPE_ROOT, 'dist')
 PROTOTYPE_PKG_DIR  = File.join(PROTOTYPE_ROOT, 'pkg')
 PROTOTYPE_VERSION  = '1.6.0.3'
+PKG_NOREX_JS	   = '../../js/'
 
-task :default => [:dist, :dist_helper, :package, :clean_package_source]
+task :default => [:dist]
 
 desc "Builds the distribution."
 task :dist do
@@ -31,6 +32,7 @@ task :dist_helper do
       dist << Protodoc::Preprocessor.new('prototype_update_helper.js')
     end
   end
+  cp File.join(PROTOTYPE_DIST_DIR, 'prototype.js'), File.join(PKG_NOREX_JS, 'prototype.js')
 end
 
 Rake::PackageTask.new('prototype', PROTOTYPE_VERSION) do |package|
