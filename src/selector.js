@@ -467,16 +467,8 @@ Object.extend(Selector, {
     id: function(nodes, root, id, combinator) {
       var targetNode = $(id), h = Selector.handlers;
       if (!targetNode) {
-        var needsToSearch = false;
-        // IE and Opera don't find elements by ID if they're not attached
-        // to the document.
-        if (Prototype.Browser.IE && (root.sourceIndex < 1 ||
-         root === document)) {
-          needsToSearch = true;        
-        } else if (Prototype.Browser.Opera &&
-         (root.compareDocumentPosition(document) & 1) === 1) {
-          needsToSearch = true;   
-        }
+        var needsToSearch = root === document || root.sourceIndex < 1 ||
+          !Element.descendantOf(root, document.documentElement);
         
         if (needsToSearch) {
           var nodes = root.getElementsByTagName('*');

@@ -1,3 +1,5 @@
+* Ensure Selector.handlers.id finds the proper element even when it's not attached to the document. [jddalton]
+
 * Fix Position.within in IE. [jddalton]
 
 * Fix the deprecated Position.withinIncludingScrollOffsets. [jddalton]
