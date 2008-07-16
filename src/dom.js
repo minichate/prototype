@@ -625,6 +625,9 @@ Object.extend(Element.Methods, (function() {
      (element.sourceIndex < 1 || !element.offsetParent)) {
       return false;
     }
+    if (element.sourceIndex > 0 && element.offsetParent === document.documentElement) {
+      return element.offsetParent;
+    }
     return op;
   }
 

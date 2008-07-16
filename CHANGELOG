@@ -1,3 +1,5 @@
+* Fix Position.within in IE. [jddalton]
+
 * Fix the deprecated Position.withinIncludingScrollOffsets. [jddalton]
 
 * Consolidate document.body getOffsetParent checks into a private utility method. [staaky, jddalton]
