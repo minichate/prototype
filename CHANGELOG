@@ -1,3 +1,5 @@
+* Optimize Function#bind and Function#bindAsEventListener to avoid using Array#concat when only the context argument is given. [kangax]
+
 * Ensure Selector.handlers.id finds the proper element even when it's not attached to the document. [jddalton]
 
 * Fix Position.within in IE. [jddalton]
