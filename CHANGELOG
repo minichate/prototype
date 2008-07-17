@@ -1,3 +1,5 @@
+* Use different tactic to sniff for Opera in order to avoid false positives in IE. [Tobie Langel, jddalton]
+
 * Optimize Function#bind and Function#bindAsEventListener to avoid using Array#concat when only the context argument is given. [kangax]
 
 * Ensure Selector.handlers.id finds the proper element even when it's not attached to the document. [jddalton]
