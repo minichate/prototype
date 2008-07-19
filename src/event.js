@@ -269,13 +269,13 @@ Object.extend(Event, (function() {
         return element;
       }
       else if (!handler && eventName) {
-        getWrappersForEventName(id, eventName).each(function(wrapper) {
+        getWrappersForEventName(id, eventName)._each(function(wrapper) {
           Event.stopObserving(element, eventName, wrapper.handler);
         });
         return element;
       }
       else if (!eventName) {
-        Object.keys(c).without("element").each(function(eventName) {
+        Object.keys(c).without("element")._each(function(eventName) {
           Event.stopObserving(element, eventName);
         });
         return element;

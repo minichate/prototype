@@ -143,7 +143,7 @@ Element.Methods = {
       childNodes = Element._getContentFromAnonymousElement(tagName, content.stripScripts());
       
       if (position == 'top' || position == 'after') childNodes.reverse();
-      childNodes.each(insert.curry(element));
+      childNodes._each(insert.curry(element));
       
       content.evalScripts.bind(content).defer();
     }
@@ -166,7 +166,7 @@ Element.Methods = {
   inspect: function(element) {
     element = $(element);
     var result = '<' + element.tagName.toLowerCase();
-    $H({'id': 'id', 'className': 'class'}).each(function(pair) {
+    $H({'id': 'id', 'className': 'class'})._each(function(pair) {
       var property = pair.first(), attribute = pair.last();
       var value = (element[property] || '').toString();
       if (value) result += ' ' + attribute + '=' + value.inspect(true);
@@ -851,7 +851,7 @@ if (Prototype.Browser.Opera) {
 else if (Prototype.Browser.IE) {
   // IE doesn't report offsets correctly for static elements, so we change them
   // to "relative" to get the values, then change them back.  
-  $w('positionedOffset viewportOffset').each(function(method) {
+  $w('positionedOffset viewportOffset')._each(function(method) {
     Element.Methods[method] = Element.Methods[method].wrap(
       function(proceed, element) {
         element = $(element);
@@ -921,14 +921,14 @@ else if (Prototype.Browser.IE) {
     t.write.names = { };
     
     $w('cellPadding cellSpacing colSpan rowSpan vAlign dateTime accessKey ' +
-       'tabIndex encType maxLength readOnly longDesc frameBorder').each(function(attr) {
+       'tabIndex encType maxLength readOnly longDesc frameBorder')._each(function(attr) {
       var lower = attr.toLowerCase();
       t.has[lower] = attr;
       t.read.names[lower] = attr;
       t.write.names[lower] = attr;
     });
     
-    [t.write.names, t.read.names].each(function(n) {
+    [t.write.names, t.read.names]._each(function(n) {
       Object.extend(n, {
         'class': 'className',
         'for': 'htmlFor'
@@ -1068,9 +1068,9 @@ if (Prototype.Browser.IE || Prototype.Browser.Opera) {
     var tagName = element.tagName.toUpperCase();
     
     if (tagName in Element._insertionTranslations.tags) {
-      $A(element.childNodes).each(function(node) { element.removeChild(node) });
+      $A(element.childNodes)._each(function(node) { element.removeChild(node) });
       Element._getContentFromAnonymousElement(tagName, content.stripScripts())
-        .each(function(node) { element.appendChild(node) });
+        ._each(function(node) { element.appendChild(node) });
     }
     else element.innerHTML = content.stripScripts();
     
@@ -1084,7 +1084,7 @@ if (Prototype.Browser.IE) {
   // newly-removed elements. Prevents memory leaks in IE.  
   Element.Methods.update = Element.Methods.update.wrap(
     function(proceed, element, contents) {
-      Element.select(element, '*').each(Event.stopObserving);
+      Element.select(element, '*')._each(Event.stopObserving);
       return proceed(element, contents);
     }
   );  
@@ -1111,9 +1111,9 @@ if ('outerHTML' in document.createElement('div')) {
        content.stripScripts());
       parent.removeChild(element);
       if (nextSibling)
-        fragments.each(function(node) { parent.insertBefore(node, nextSibling) });
+        fragments._each(function(node) { parent.insertBefore(node, nextSibling) });
       else 
-        fragments.each(function(node) { parent.appendChild(node) });
+        fragments._each(function(node) { parent.appendChild(node) });
     }
     else element.outerHTML = content.stripScripts();
     
@@ -1261,7 +1261,7 @@ Element.addMethods = function(methods) {
   
   if (!tagName) Object.extend(Element.Methods, methods || { });  
   else {
-    if (Object.isArray(tagName)) tagName.each(extend);
+    if (Object.isArray(tagName)) tagName._each(extend);
     else extend(tagName);
   }
   
@@ -1330,7 +1330,7 @@ Element.addMethods = function(methods) {
 document.viewport = {
   getDimensions: function() {
     var dimensions = { }, B = Prototype.Browser;
-    $w('width height').each(function(d) {
+    $w('width height')._each(function(d) {
       var D = d.capitalize();
       if (B.WebKit && !document.evaluate) {
         // Safari <3.0 needs self.innerWidth/Height

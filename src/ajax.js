@@ -27,7 +27,7 @@ Ajax.Responders = {
   },
 
   dispatch: function(callback, request, transport, json) {
-    this.each(function(responder) {
+    this._each(function(responder) {
       if (Object.isFunction(responder[callback])) {
         try {
           responder[callback].apply(responder, [request, transport, json]);
@@ -156,7 +156,7 @@ Ajax.Request = Class.create(Ajax.Base, {
         for (var i = 0, length = extras.length; i < length; i += 2)
           headers[extras[i]] = extras[i+1];
       else
-        $H(extras).each(function(pair) { headers[pair.key] = pair.value });
+        $H(extras)._each(function(pair) { headers[pair.key] = pair.value });
     }
 
     for (var name in headers)
