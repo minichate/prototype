@@ -140,10 +140,8 @@ Element.Methods = {
       tagName = ((position == 'before' || position == 'after')
         ? element.parentNode : element).tagName.toUpperCase();
       
-      childNodes = Element._getContentFromAnonymousElement(tagName, content.stripScripts());
-      
-      if (position == 'top' || position == 'after') childNodes.reverse();
-      childNodes._each(insert.curry(element));
+      fragment = Element._getContentFromAnonymousElement(tagName, content.stripScripts());
+      insert(element, fragment);
       
       content.evalScripts.bind(content).defer();
     }
@@ -1065,14 +1063,15 @@ if (Prototype.Browser.IE || Prototype.Browser.Opera) {
     if (Object.isElement(content)) return element.update().insert(content);
     
     content = Object.toHTML(content);
-    var tagName = element.tagName.toUpperCase();
+    var tagName = element.tagName.toUpperCase(),
+     stripped = content.stripScripts();
     
     if (tagName in Element._insertionTranslations.tags) {
-      $A(element.childNodes)._each(function(node) { element.removeChild(node) });
-      Element._getContentFromAnonymousElement(tagName, content.stripScripts())
-        ._each(function(node) { element.appendChild(node) });
+      var children = element.childNodes, length = children.length;
+      while (length--) element.removeChild(children[length]);
+      element.appendChild(Element._getContentFromAnonymousElement(tagName, stripped));
     }
-    else element.innerHTML = content.stripScripts();
+    else element.innerHTML = stripped;
     
     content.evalScripts.bind(content).defer();
     return element;
@@ -1101,21 +1100,18 @@ if ('outerHTML' in document.createElement('div')) {
     }
 
     content = Object.toHTML(content);
-    var parent = element.parentNode, tagName = parent.tagName.toUpperCase();
+    var parent = element.parentNode, 
+     tagName   = parent.tagName.toUpperCase(),
+     stripped  = content.stripScripts();
     
     // Avoid outerHTML in IE because it incorrectly removes the replaced
     // elements' child nodes.
     if (Element._insertionTranslations.tags[tagName] || Prototype.Browser.IE) {
-      var nextSibling = element.next();
-      var fragments = Element._getContentFromAnonymousElement(tagName,
-       content.stripScripts());
-      parent.removeChild(element);
-      if (nextSibling)
-        fragments._each(function(node) { parent.insertBefore(node, nextSibling) });
-      else 
-        fragments._each(function(node) { parent.appendChild(node) });
+      var nextSibling = Element.next(element),
+       fragment = Element._getContentFromAnonymousElement(tagName, stripped);
+      parent.replaceChild(fragment, element);
     }
-    else element.outerHTML = content.stripScripts();
+    else element.outerHTML = stripped;
     
     content.evalScripts.bind(content).defer();
     return element;
@@ -1129,14 +1125,27 @@ Element._returnOffset = function(l, t) {
   return result;
 };
 
-Element._getContentFromAnonymousElement = function(tagName, html) {
-  var div = new Element('div'), t = Element._insertionTranslations.tags[tagName];
+Object.extend(Element._getContentFromAnonymousElement = function(tagName, html) {
+  var callee = arguments.callee, node = callee.div,
+  t = Element._insertionTranslations.tags[tagName];
+  
   if (t) {
-    div.innerHTML = t[0] + html + t[1];
-    t[2].times(function() { div = div.firstChild });
-  } else div.innerHTML = html;
-  return $A(div.childNodes);
-};
+    node.innerHTML= t[0] + html + t[1];
+    t[2].times(function() { node = node.firstChild });
+  } else node.innerHTML = html;
+  
+  if (node.removeNode) {
+    // Shortcut for IE removing the parent but keeping the children
+    callee.fragment.appendChild(node).removeNode();
+  } else {
+    var length = node.childNodes.length;
+    while (length--) callee.fragment.insertBefore(node.childNodes[length], callee.fragment.firstChild);
+  }
+  return callee.fragment;
+}, {
+  div: document.createElement('div'),
+  fragment: document.createDocumentFragment()
+});
 
 Element._insertionTranslations = {
   before: function(element, node) {
