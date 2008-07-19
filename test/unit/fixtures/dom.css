@@ -86,6 +86,16 @@ div.style-test { margin-left: 1px }
   background: #21bacc;
 }
 
+#absolutizeChildren { position: absolute; top: 0px; left: 470px; }
+#absolutizeChildren div,
+#absolutizeChildren span,
+#absolutizeChildren img { position: relative; }
+
+.tizeChildren .addMargin { margin: 3px; }
+.tizeChildren .addPadding { padding: 10px; }
+.tizeChildren .addBorders { border: 5px solid #cccccc; }
+.tizeChildren img { width: 105px; height: 48px; }
+
 #notInlineAbsoluted { position: absolute; }
 
 #elementToViewportDimensions {

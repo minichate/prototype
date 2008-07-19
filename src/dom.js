@@ -443,7 +443,7 @@ Element.Methods = {
     element = $(element);
     var display = element.getStyle('display'),
      dimensions = { width: element.offsetWidth, height: element.offsetHeight };
-
+    
     // All width and height properties return 0 on elements with display:none,
     // so show the element temporarily
     if (display === "none" || display === null ||
@@ -456,7 +456,7 @@ Element.Methods = {
       els.visibility = 'hidden';
       els.position = 'absolute';
       els.display = 'block';
-
+      
       dimensions = { width: element.offsetWidth, height: element.offsetHeight };
 
       els.display = originalDisplay;
@@ -512,73 +512,6 @@ Element.Methods = {
     element._overflow = null;
     return element;
   },
-
-  absolutize: function(element) {
-    element = $(element);
-    if (Element.getStyle(element, 'position') === 'absolute')
-      return element;
-
-    var offsets = Element.positionedOffset(element);
-    var dimensions = Element.getDimensions(element);
-    var properties, dim, dims = ['width', 'height'];
-    
-    for(var i = 0; dim = dims[i]; i++) {
-      if (dim === 'height') {
-        properties = $w('borderTopWidth padingTop borderBottomWidth paddingBottom');
-      } else {
-        properties = $w('borderLeftWidth paddingLeft borderRightWidth paddingRight');
-      }
-      dimensions[dim] = Math.max(0, properties.inject(dimensions[dim], function(memo, property) {
-        return memo - (parseFloat(Element.getStyle(element, property), 10) || 0);
-      }));
-    }
-    
-    Object.extend(element, {
-      _originalLeft:       offsets.left - parseFloat(element.style.left || 0),
-      _originalTop:        offsets.top  - parseFloat(element.style.top  || 0),
-      _originalWidth:      element.style.width,
-      _originalHeight:     element.style.height,   
-      _originalMarginTop:  element.style.marginTop,
-      _originalMarginLeft: element.style.marginLeft
-    });
-    
-    Element.setStyle(element, {
-      marginTop:  '0px',
-      marginLeft: '0px',
-      position:   'absolute',
-      top:        offsets.top  + 'px',
-      left:       offsets.left + 'px',
-      width:      dimensions.width  + 'px',
-      height:     dimensions.height + 'px'
-    });
-
-    return element;
-  },
-
-  relativize: function(element) {
-    element = $(element);
-    if (Element.getStyle(element, 'position') === 'relative')
-      return element;
-    
-    if (Object.isUndefined(element._originalTop))
-      throw new Error("Element#absolutize must be called first.");
-    
-    Element.setStyle(element, { position: 'relative' });
-
-    var top  = parseFloat(element.style.top  || 0) - (element._originalTop  || 0);
-    var left = parseFloat(element.style.left || 0) - (element._originalLeft || 0);
-    
-    Element.setStyle(element, {
-      top:        top  + 'px',
-      left:       left + 'px',
-      marginLeft: element._originalMarginLeft,
-      marginTop:  element._originalMarginTop,
-      width:      element._originalHeight,
-      height:     element._originalWidth
-    });
-    
-    return element;
-  },
   
   getOffsetParent: function(element) {
     element = $(element);
@@ -597,7 +530,7 @@ Element.Methods = {
       if (Element.getStyle(element, 'position') !== 'static')
         return $(element);
     }
-    
+
     return $(document.body);
   }
 };
@@ -618,6 +551,23 @@ Object.extend(Element.Methods, (function() {
       return element.offsetParent;
     }
     return op;
+  }
+
+  function getCssDimensions(element) {
+    var properties, dims = $w('width height'),
+     dimensions = Element.getDimensions(element);
+      
+    for(var i = 0; i < 2; i++) {
+      if (dims[i] === 'height') {
+        properties = $w('borderTopWidth padingTop borderBottomWidth paddingBottom');
+      } else {
+        properties = $w('borderLeftWidth paddingLeft borderRightWidth paddingRight');
+      }
+      dimensions[dims[i]] = Math.max(0, properties.inject(dimensions[dims[i]], function(memo, property) {
+        return memo - (parseFloat(Element.getStyle(element, property), 10) || 0);
+      }));
+    }
+    return dimensions;
   }
 
   function cloneDimension(element, source, dimension) {
@@ -651,6 +601,66 @@ Object.extend(Element.Methods, (function() {
   }
   
   return {
+  
+    absolutize: function(element) {
+      element = $(element);
+      if (Element.getStyle(element, 'position') === 'absolute')
+        return element;
+
+      var s = element.style,
+       offsets = Element.positionedOffset(element),
+       cssDimensions = getCssDimensions(element);
+
+      element._originalLeft       = offsets.left - getNumericStyle(element, 'left');
+      element._originalTop        = offsets.top  - getNumericStyle(element, 'top');
+      element._originalWidth      = s.width;
+      element._originalHeight     = s.height;   
+      element._originalMarginTop  = s.marginTop;
+      element._originalMarginLeft = s.marginLeft;
+
+      var before = Element.getDimensions(element);
+      s.position   = 'absolute';
+      s.marginTop  = '0px';
+      s.marginLeft = '0px';
+      s.top        = offsets.top  + 'px';
+      s.left       = offsets.left + 'px';
+      s.width      = cssDimensions.width  + 'px';
+      s.height     = cssDimensions.height + 'px';
+      
+      var after = Element.getDimensions(element);
+      s.width   = Math.max(0, cssDimensions.width  + (before.width  - after.width))  + 'px';
+      s.height  = Math.max(0, cssDimensions.height + (before.height - after.height)) + 'px';
+      
+      return element;
+    },
+
+    relativize: function(element) {
+      element = $(element);
+      if (Element.getStyle(element, 'position') === 'relative')
+        return element;
+
+      if (Object.isUndefined(element._originalTop))
+        throw new Error("Element#absolutize must be called first.");
+
+      var s = element.style;
+      s.position = 'relative';
+
+      var top  = getNumericStyle(element, 'top')  - (element._originalTop  || 0);
+      var left = getNumericStyle(element, 'left') - (element._originalLeft || 0);
+
+      s.top        = top  + 'px';
+      s.left       = left + 'px';
+      s.marginLeft = element._originalMarginLeft;
+      s.marginTop  = element._originalMarginTop;
+      s.width      = element._originalHeight;
+      s.height     = element._originalWidth;
+
+      element.removeAttribute('_originalTop');
+      if (!Object.isUndefined(element._originalTop))
+        delete element._originalTop;
+      return element;
+    },
+  
     cumulativeScrollOffset: function(element) {
       element = $(element);
       var valueT = 0, valueL = 0, end = document;
