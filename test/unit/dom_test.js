@@ -1165,11 +1165,11 @@ new Test.Unit.Runner({
     var target = $('clonePositionTarget'),
      source = $('clonePositionSource');
     
-    target.clonePosition(source, {
+    window.scrollTo(0, 0);
+    target.clonePosition(source, {  
       offsetTop: 20,
       offsetLeft: 30
     });
-    
     this.assertIdentical(source.cumulativeOffset().top  + 20, target.cumulativeOffset().top);
     this.assertIdentical(source.cumulativeOffset().left + 30, target.cumulativeOffset().left);
         
@@ -1393,6 +1393,21 @@ new Test.Unit.Runner({
         passed = false;
       }
       this.assertEqual(false, passed);
+    }, this);
+  },
+  
+  testAbsolutizeRelativizeNotAffectElementDimensions: function() {
+    $('absolutizeChildren').childElements().each(function(element) {
+      var original = element.getDimensions();
+      element.absolutize();
+      var absolute = element.getDimensions();
+      element.relativize();
+      var relative = element.getDimensions();
+      
+      this.assert(original.width == absolute.width && absolute.width == relative.width,
+        element.tagName + ' ' + element.className);
+      this.assert(original.height == absolute.height && absolute.height == relative.height,
+        element.tagName + ' ' + element.className);
     }, this);
   },
   

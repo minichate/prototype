@@ -8,7 +8,17 @@
 
 * Make Element._attributeTranslations.read.values._getEv use Function.prototype.toString and return value only if wrapped in an anonymous function. [#184 state:resolved] [Garrett Smith, jddalton]
 
-* Fix Prototype.Browser.Opera sniff and remove use of window.opera. [#176 state:resolved] [Tobie Langel]
+* Improve NodeList detection for Safari's $A function. [Garrett Smith, jddalton]
+
+* Use different tactic to sniff for Opera in order to avoid false positives in IE. [Tobie Langel, jddalton]
+
+* Optimize Function#bind and Function#bindAsEventListener to avoid using Array#concat when only the context argument is given. [kangax]
+
+* Ensure Selector.handlers.id finds the proper element even when it's not attached to the document. [jddalton]
+
+* Fix Position.within in IE. [jddalton]
+
+* Fix the deprecated Position.withinIncludingScrollOffsets. [jddalton]
 
 * Consolidate document.body getOffsetParent checks into a private utility method. [staaky, jddalton]
 
@@ -33,7 +43,6 @@
 * Fix issue where Opera gets confused by complex selectors in $$. [Paulo Pereira, Andrea Baron, jddalton]
 
 * Fix for IE7 to access local files via Ajax.Request. Closes #8259. [hagen.seifert, jddalton]
->>>>>>> jdalton/master:CHANGELOG
 
 * Ensure CSS files have loaded before firing the dom:loaded event. [Diego Perini, jddalton]
 

@@ -140,10 +140,8 @@ Element.Methods = {
       tagName = ((position == 'before' || position == 'after')
         ? element.parentNode : element).tagName.toUpperCase();
       
-      childNodes = Element._getContentFromAnonymousElement(tagName, content.stripScripts());
-      
-      if (position == 'top' || position == 'after') childNodes.reverse();
-      childNodes.each(insert.curry(element));
+      fragment = Element._getContentFromAnonymousElement(tagName, content.stripScripts());
+      insert(element, fragment);
       
       content.evalScripts.bind(content).defer();
     }
@@ -166,7 +164,7 @@ Element.Methods = {
   inspect: function(element) {
     element = $(element);
     var result = '<' + element.tagName.toLowerCase();
-    $H({'id': 'id', 'className': 'class'}).each(function(pair) {
+    $H({'id': 'id', 'className': 'class'})._each(function(pair) {
       var property = pair.first(), attribute = pair.last();
       var value = (element[property] || '').toString();
       if (value) result += ' ' + attribute + '=' + value.inspect(true);
@@ -443,7 +441,7 @@ Element.Methods = {
     element = $(element);
     var display = element.getStyle('display'),
      dimensions = { width: element.offsetWidth, height: element.offsetHeight };
-
+    
     // All width and height properties return 0 on elements with display:none,
     // so show the element temporarily
     if (display === "none" || display === null ||
@@ -456,7 +454,7 @@ Element.Methods = {
       els.visibility = 'hidden';
       els.position = 'absolute';
       els.display = 'block';
-
+      
       dimensions = { width: element.offsetWidth, height: element.offsetHeight };
 
       els.display = originalDisplay;
@@ -512,73 +510,6 @@ Element.Methods = {
     element._overflow = null;
     return element;
   },
-
-  absolutize: function(element) {
-    element = $(element);
-    if (Element.getStyle(element, 'position') === 'absolute')
-      return element;
-
-    var offsets = Element.positionedOffset(element);
-    var dimensions = Element.getDimensions(element);
-    var properties, dim, dims = ['width', 'height'];
-    
-    for(var i = 0; dim = dims[i]; i++) {
-      if (dim === 'height') {
-        properties = $w('borderTopWidth padingTop borderBottomWidth paddingBottom');
-      } else {
-        properties = $w('borderLeftWidth paddingLeft borderRightWidth paddingRight');
-      }
-      dimensions[dim] = Math.max(0, properties.inject(dimensions[dim], function(memo, property) {
-        return memo - (parseFloat(Element.getStyle(element, property), 10) || 0);
-      }));
-    }
-    
-    Object.extend(element, {
-      _originalLeft:       offsets.left - parseFloat(element.style.left || 0),
-      _originalTop:        offsets.top  - parseFloat(element.style.top  || 0),
-      _originalWidth:      element.style.width,
-      _originalHeight:     element.style.height,   
-      _originalMarginTop:  element.style.marginTop,
-      _originalMarginLeft: element.style.marginLeft
-    });
-    
-    Element.setStyle(element, {
-      marginTop:  '0px',
-      marginLeft: '0px',
-      position:   'absolute',
-      top:        offsets.top  + 'px',
-      left:       offsets.left + 'px',
-      width:      dimensions.width  + 'px',
-      height:     dimensions.height + 'px'
-    });
-
-    return element;
-  },
-
-  relativize: function(element) {
-    element = $(element);
-    if (Element.getStyle(element, 'position') === 'relative')
-      return element;
-    
-    if (Object.isUndefined(element._originalTop))
-      throw new Error("Element#absolutize must be called first.");
-    
-    Element.setStyle(element, { position: 'relative' });
-
-    var top  = parseFloat(element.style.top  || 0) - (element._originalTop  || 0);
-    var left = parseFloat(element.style.left || 0) - (element._originalLeft || 0);
-    
-    Element.setStyle(element, {
-      top:        top  + 'px',
-      left:       left + 'px',
-      marginLeft: element._originalMarginLeft,
-      marginTop:  element._originalMarginTop,
-      width:      element._originalHeight,
-      height:     element._originalWidth
-    });
-    
-    return element;
-  },
   
   getOffsetParent: function(element) {
     element = $(element);
@@ -597,7 +528,7 @@ Element.Methods = {
       if (Element.getStyle(element, 'position') !== 'static')
         return $(element);
     }
-    
+
     return $(document.body);
   }
 };
@@ -614,7 +545,27 @@ Object.extend(Element.Methods, (function() {
         element.offsetParent === document.documentElement)) {
       return false;
     }
+    if (element.sourceIndex > 0 && element.offsetParent === document.documentElement) {
+      return element.offsetParent;
+    }
     return op;
+  }
+
+  function getCssDimensions(element) {
+    var properties, dims = $w('width height'),
+     dimensions = Element.getDimensions(element);
+      
+    for(var i = 0; i < 2; i++) {
+      if (dims[i] === 'height') {
+        properties = $w('borderTopWidth padingTop borderBottomWidth paddingBottom');
+      } else {
+        properties = $w('borderLeftWidth paddingLeft borderRightWidth paddingRight');
+      }
+      dimensions[dims[i]] = Math.max(0, properties.inject(dimensions[dims[i]], function(memo, property) {
+        return memo - (parseFloat(Element.getStyle(element, property), 10) || 0);
+      }));
+    }
+    return dimensions;
   }
 
   function cloneDimension(element, source, dimension) {
@@ -648,6 +599,66 @@ Object.extend(Element.Methods, (function() {
   }
   
   return {
+  
+    absolutize: function(element) {
+      element = $(element);
+      if (Element.getStyle(element, 'position') === 'absolute')
+        return element;
+
+      var s = element.style,
+       offsets = Element.positionedOffset(element),
+       cssDimensions = getCssDimensions(element);
+
+      element._originalLeft       = offsets.left - getNumericStyle(element, 'left');
+      element._originalTop        = offsets.top  - getNumericStyle(element, 'top');
+      element._originalWidth      = s.width;
+      element._originalHeight     = s.height;   
+      element._originalMarginTop  = s.marginTop;
+      element._originalMarginLeft = s.marginLeft;
+
+      var before = Element.getDimensions(element);
+      s.position   = 'absolute';
+      s.marginTop  = '0px';
+      s.marginLeft = '0px';
+      s.top        = offsets.top  + 'px';
+      s.left       = offsets.left + 'px';
+      s.width      = cssDimensions.width  + 'px';
+      s.height     = cssDimensions.height + 'px';
+      
+      var after = Element.getDimensions(element);
+      s.width   = Math.max(0, cssDimensions.width  + (before.width  - after.width))  + 'px';
+      s.height  = Math.max(0, cssDimensions.height + (before.height - after.height)) + 'px';
+      
+      return element;
+    },
+
+    relativize: function(element) {
+      element = $(element);
+      if (Element.getStyle(element, 'position') === 'relative')
+        return element;
+
+      if (Object.isUndefined(element._originalTop))
+        throw new Error("Element#absolutize must be called first.");
+
+      var s = element.style;
+      s.position = 'relative';
+
+      var top  = getNumericStyle(element, 'top')  - (element._originalTop  || 0);
+      var left = getNumericStyle(element, 'left') - (element._originalLeft || 0);
+
+      s.top        = top  + 'px';
+      s.left       = left + 'px';
+      s.marginLeft = element._originalMarginLeft;
+      s.marginTop  = element._originalMarginTop;
+      s.width      = element._originalHeight;
+      s.height     = element._originalWidth;
+
+      element.removeAttribute('_originalTop');
+      if (!Object.isUndefined(element._originalTop))
+        delete element._originalTop;
+      return element;
+    },
+  
     cumulativeScrollOffset: function(element) {
       element = $(element);
       var valueT = 0, valueL = 0, end = document;
@@ -838,7 +849,7 @@ if (Prototype.Browser.Opera) {
 else if (Prototype.Browser.IE) {
   // IE doesn't report offsets correctly for static elements, so we change them
   // to "relative" to get the values, then change them back.  
-  $w('positionedOffset viewportOffset').each(function(method) {
+  $w('positionedOffset viewportOffset')._each(function(method) {
     Element.Methods[method] = Element.Methods[method].wrap(
       function(proceed, element) {
         element = $(element);
@@ -908,14 +919,14 @@ else if (Prototype.Browser.IE) {
     t.write.names = { };
     
     $w('cellPadding cellSpacing colSpan rowSpan vAlign dateTime accessKey ' +
-       'tabIndex encType maxLength readOnly longDesc frameBorder').each(function(attr) {
+       'tabIndex encType maxLength readOnly longDesc frameBorder')._each(function(attr) {
       var lower = attr.toLowerCase();
       t.has[lower] = attr;
       t.read.names[lower] = attr;
       t.write.names[lower] = attr;
     });
     
-    [t.write.names, t.read.names].each(function(n) {
+    [t.write.names, t.read.names]._each(function(n) {
       Object.extend(n, {
         'class': 'className',
         'for': 'htmlFor'
@@ -1052,14 +1063,15 @@ if (Prototype.Browser.IE || Prototype.Browser.Opera) {
     if (Object.isElement(content)) return element.update().insert(content);
     
     content = Object.toHTML(content);
-    var tagName = element.tagName.toUpperCase();
+    var tagName = element.tagName.toUpperCase(),
+     stripped = content.stripScripts();
     
     if (tagName in Element._insertionTranslations.tags) {
-      $A(element.childNodes).each(function(node) { element.removeChild(node) });
-      Element._getContentFromAnonymousElement(tagName, content.stripScripts())
-        .each(function(node) { element.appendChild(node) });
+      var children = element.childNodes, length = children.length;
+      while (length--) element.removeChild(children[length]);
+      element.appendChild(Element._getContentFromAnonymousElement(tagName, stripped));
     }
-    else element.innerHTML = content.stripScripts();
+    else element.innerHTML = stripped;
     
     content.evalScripts.bind(content).defer();
     return element;
@@ -1071,7 +1083,7 @@ if (Prototype.Browser.IE) {
   // newly-removed elements. Prevents memory leaks in IE.  
   Element.Methods.update = Element.Methods.update.wrap(
     function(proceed, element, contents) {
-      Element.select(element, '*').each(Event.stopObserving);
+      Element.select(element, '*')._each(Event.stopObserving);
       return proceed(element, contents);
     }
   );  
@@ -1088,21 +1100,18 @@ if ('outerHTML' in document.createElement('div')) {
     }
 
     content = Object.toHTML(content);
-    var parent = element.parentNode, tagName = parent.tagName.toUpperCase();
+    var parent = element.parentNode, 
+     tagName   = parent.tagName.toUpperCase(),
+     stripped  = content.stripScripts();
     
     // Avoid outerHTML in IE because it incorrectly removes the replaced
     // elements' child nodes.
     if (Element._insertionTranslations.tags[tagName] || Prototype.Browser.IE) {
-      var nextSibling = element.next();
-      var fragments = Element._getContentFromAnonymousElement(tagName,
-       content.stripScripts());
-      parent.removeChild(element);
-      if (nextSibling)
-        fragments.each(function(node) { parent.insertBefore(node, nextSibling) });
-      else 
-        fragments.each(function(node) { parent.appendChild(node) });
+      var nextSibling = Element.next(element),
+       fragment = Element._getContentFromAnonymousElement(tagName, stripped);
+      parent.replaceChild(fragment, element);
     }
-    else element.outerHTML = content.stripScripts();
+    else element.outerHTML = stripped;
     
     content.evalScripts.bind(content).defer();
     return element;
@@ -1116,14 +1125,27 @@ Element._returnOffset = function(l, t) {
   return result;
 };
 
-Element._getContentFromAnonymousElement = function(tagName, html) {
-  var div = new Element('div'), t = Element._insertionTranslations.tags[tagName];
+Object.extend(Element._getContentFromAnonymousElement = function(tagName, html) {
+  var callee = arguments.callee, node = callee.div,
+  t = Element._insertionTranslations.tags[tagName];
+  
   if (t) {
-    div.innerHTML = t[0] + html + t[1];
-    t[2].times(function() { div = div.firstChild });
-  } else div.innerHTML = html;
-  return $A(div.childNodes);
-};
+    node.innerHTML= t[0] + html + t[1];
+    t[2].times(function() { node = node.firstChild });
+  } else node.innerHTML = html;
+  
+  if (node.removeNode) {
+    // Shortcut for IE removing the parent but keeping the children
+    callee.fragment.appendChild(node).removeNode();
+  } else {
+    var length = node.childNodes.length;
+    while (length--) callee.fragment.insertBefore(node.childNodes[length], callee.fragment.firstChild);
+  }
+  return callee.fragment;
+}, {
+  div: document.createElement('div'),
+  fragment: document.createDocumentFragment()
+});
 
 Element._insertionTranslations = {
   before: function(element, node) {
@@ -1248,7 +1270,7 @@ Element.addMethods = function(methods) {
   
   if (!tagName) Object.extend(Element.Methods, methods || { });  
   else {
-    if (Object.isArray(tagName)) tagName.each(extend);
+    if (Object.isArray(tagName)) tagName._each(extend);
     else extend(tagName);
   }
   
@@ -1317,7 +1339,7 @@ Element.addMethods = function(methods) {
 document.viewport = {
   getDimensions: function() {
     var dimensions = { }, B = Prototype.Browser;
-    $w('width height').each(function(d) {
+    $w('width height')._each(function(d) {
       var D = d.capitalize();
       if (B.WebKit && !document.evaluate) {
         // Safari <3.0 needs self.innerWidth/Height
