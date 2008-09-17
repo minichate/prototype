@@ -76,12 +76,14 @@ Element.Methods = {
   },
 
   hide: function(element) {
-    (element = $(element)).style.display = 'none';
+    element = $(element);
+    element.style.display = 'none';
     return element;
   },
   
   show: function(element) {
-    (element = $(element)).style.display = '';
+    element = $(element);
+    element.style.display = '';
     return element;
   },
 
@@ -1182,7 +1184,7 @@ Element.Methods.Simulated = {
   // Used by the Selector class.  
   hasAttribute: function(element, attribute) {
     attribute = Element._attributeTranslations.has[attribute] || attribute;
-    var node = element.getAttributeNode(attribute);
+    var node = $(element).getAttributeNode(attribute);
     return !!(node && node.specified);
   }
 };
@@ -1339,7 +1341,7 @@ Element.addMethods = function(methods) {
 document.viewport = {
   getDimensions: function() {
     var dimensions = { }, B = Prototype.Browser;
-    $w('width height')._each(function(d) {
+    $w('width height').each(function(d) {
       var D = d.capitalize();
       if (B.WebKit && !document.evaluate) {
         // Safari <3.0 needs self.innerWidth/Height

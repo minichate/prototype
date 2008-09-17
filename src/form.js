@@ -12,35 +12,16 @@ var Form = {
     var submit = options.submit;
     
     var data = elements.inject({ }, function(result, element) {
-      element = $(element);
-      key     = element.name;
-      value   = element.getValue();
-      type    = element.type;
-      
-      isImageType = type === 'image';
-      isSubmitButton = type === 'submit' || isImageType;
-      
-      // Null values don't get serialized
-      if (value === null) return result;
-      // Disabled elements don't get serialized
-      if (element.disabled) return result;
-      // <input type="file|reset" /> doesn't get serialized
-      if (type === 'file' || type === 'reset') return result;
-      // Non-active submit buttons don't get serialized
-      if (isSubmitButton &&
-       (submit === false || submitSerialized ||
-       (submit && !(key === submit || element === submit))))
-        return result;
-      
-      if (isSubmitButton) {
-        submitSerialized = true;
-        if (isImageType) {
-          var prefix = key ? key + '.' : '',
-           x = options.x || 0, y = options.y || 0;
-           
-          result[prefix + 'x'] = x;
-          result[prefix + 'y'] = y;
-          return result;
+      if (!element.disabled && element.name) {
+        key = element.name; value = $(element).getValue();
+        if (value != null && element.type != 'file' && (element.type != 'submit' || (!submitted &&
+            submit !== false && (!submit || key == submit) && (submitted = true)))) { 
+          if (key in result) {
+            // a key is already present; construct an array of values
+            if (!Object.isArray(result[key])) result[key] = [result[key]];
+            result[key].push(value);
+          }
+          else result[key] = value;
         }
       } else if (!key) return result;
       

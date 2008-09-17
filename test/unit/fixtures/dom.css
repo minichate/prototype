@@ -1,7 +1,7 @@
 #style_test_1 { cursor: pointer; font-size:12px;}
 div.style-test { margin-left: 1px }
-
-#style_test_dimensions_container { 
+ 
+#style_test_dimensions_container {
   position: absolute;
   top: 0;
   left: 500px;
@@ -11,102 +11,64 @@ div.style-test { margin-left: 1px }
   padding: 10px;
   border: 3px solid red;
 }
-
+ 
 #not_floating_style { float: none }
 #floating_style { float: left }
 #op2 { opacity:0.5;filter:alpha(opacity=50)progid:DXImageTransform.Microsoft.Blur(strength=10);}
-
-#scroll_test_1 { 
+ 
+#scroll_test_1 {
   margin: 10px;
   padding: 10px;
   position: relative;
 }
-
+ 
 #scroll_test_2 {
   position: absolute;
   left: 10px;
   top: 10px;
 }
-
+ 
 #dimensions-visible,
 #dimensions-display-none,
 #dimensions-visible-pos-rel,
 #dimensions-display-none-pos-rel,
 #dimensions-visible-pos-abs,
 #dimensions-display-none-pos-abs {
-  font-size: 10px;
-  height: 10em;
-  width: 20em;
+    font-size: 10px;
+    height: 10em;
+    width: 20em;
 }
-
+ 
 #dimensions-visible-pos-abs,
 #dimensions-display-none-pos-abs {
   position: absolute;
   top: 15px;
   left: 15px;
 }
-
+ 
 #dimensions-visible-pos-rel,
 #dimensions-display-none-pos-rel {
   position: relative;
   top: 15px;
   left: 15px;
 }
-
-#dimensions-display-none, #dimensions-display-none-pos-rel, #dimensions-display-none-pos-abs {
-  display: none;
+ 
+#dimensions-display-none, #imensions-display-none-pos-rel, #dimensions-display-none-pos-abs {
+    display: none;
 }
-
+ 
 #dimensions-table, #dimensions-tbody, #dimensions-tr, #dimensions-td {
-  font-size: 10px;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-spacing: 0;
-  height: 10em;
-  width: 20em;
+    font-size: 10px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-spacing: 0;
+    height: 10em;
+    width: 20em;
 }
-
-<<<<<<< HEAD:test/unit/fixtures/dom.css
-<<<<<<< HEAD:test/unit/fixtures/dom.css
-=======
-=======
->>>>>>> 7eb4c862ea5ca61142b609838f46c314e5e438e9:test/unit/fixtures/dom.css
-#clonePositionSource {
-  position: absolute;
-  top: 10px;
-  left: 560px;
-  height: 20px;
-  width: 30px;
-  background: red;
-  border: 3px solid yellow;
-  z-index: 1;
-}
-
-#clonePositionTarget {
-  position: absolute;
-  padding: 2px;
-  margin: 2px;
-  border: 5px solid black;
-  background: #21bacc;
-}
-<<<<<<< HEAD:test/unit/fixtures/dom.css
->>>>>>> f3e16c4131343e92d7f935f804dd67a956d46f87:test/unit/fixtures/dom.css
-=======
->>>>>>> 7eb4c862ea5ca61142b609838f46c314e5e438e9:test/unit/fixtures/dom.css
-
-#absolutizeChildren { position: absolute; top: 0px; left: 470px; }
-#absolutizeChildren div,
-#absolutizeChildren span,
-#absolutizeChildren img { position: relative; }
-
-.tizeChildren .addMargin { margin: 3px; }
-.tizeChildren .addPadding { padding: 10px; }
-.tizeChildren .addBorders { border: 5px solid #cccccc; }
-.tizeChildren img { width: 105px; height: 48px; }
-
+ 
 #notInlineAbsoluted { position: absolute; }
-
+ 
 #elementToViewportDimensions {
   position: absolute;
   top: 0;
@@ -115,7 +77,7 @@ div.style-test { margin-left: 1px }
   width: 10px;
   background: #000;
 }
-
+ 
 /* for scroll test on really big screens */
 body {
   height: 40000px;

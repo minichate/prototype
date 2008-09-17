@@ -44,7 +44,8 @@ Class.Methods = {
       var property = properties[i], value = source[property];
       if (ancestor && Object.isFunction(value) &&
           value.argumentNames().first() == "$super") {
-        var method = value, value = (function(m) {
+        var method = value;
+        value = (function(m) {
           return function() { return ancestor[m].apply(this, arguments) };
         })(property).wrap(method);
 
@@ -158,10 +159,9 @@ Object.extend(Object, {
 });
 
 Object.extend(Function.prototype, {
-  argumentNames: function() {  
-    var names = Function.prototype.toString.call(this)
-     .match(/^[\s\(]*function[^(]*\(([^\)]*)\)/)[1]
-     .replace(/\s+/g, '').split(',');
+  argumentNames: function() {
+    var names = this.toString().match(/^[\s\(]*function[^(]*\(([^\)]*)\)/)[1]
+      .replace(/\s+/g, '').split(',');
     return names.length == 1 && !names[0] ? [] : names;
   },
   

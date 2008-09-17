@@ -195,8 +195,7 @@ new Test.Unit.Runner({
   },
   
   testNewElementInsert: function() {
-    var container = new Element('div');
-    var element = new Element('div');
+    var container = new Element('div'), element = new Element('div');
     container.insert(element);
     
     element.insert({ before: '<p>a paragraph</p>' });
@@ -906,7 +905,7 @@ new Test.Unit.Runner({
       this.assertEqual("17px", $('style_test_dimensions').getStyle('height'));
     }
     
-    // height/width should always be calculated if it's set to "auto" (Firefox)
+    // height/width could always be calculated if it's set to "auto" (Firefox)
     this.assertNotNull($('auto_dimensions').getStyle('height'));
     this.assertNotNull($('auto_dimensions').getStyle('width'));
   },
