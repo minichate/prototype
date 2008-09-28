@@ -48,11 +48,9 @@ if (!Node.ELEMENT_NODE) {
     attributes = attributes || { };
     tagName = tagName.toLowerCase();
     var cache = Element.cache;
-    if (Prototype.Browser.IE && (attributes.name || attributes.type)) {
-      tagName = '<' + tagName +
-        (attributes.name ? ' name="' + attributes.name + '"' : '') +
-          (attributes.type ? ' type="' + attributes.type + '"' : '') + '>';
-      delete attributes.name; delete attributes.type;
+    if (Prototype.Browser.IE && attributes.name) {
+      tagName = '<' + tagName + ' name="' + attributes.name + '">';
+      delete attributes.name;
       return Element.writeAttribute(document.createElement(tagName), attributes);
     }
     if (!cache[tagName]) cache[tagName] = Element.extend(document.createElement(tagName));
@@ -142,8 +140,10 @@ Element.Methods = {
       tagName = ((position == 'before' || position == 'after')
         ? element.parentNode : element).tagName.toUpperCase();
       
-      fragment = Element._getContentFromAnonymousElement(tagName, content.stripScripts());
-      insert(element, fragment);
+      childNodes = Element._getContentFromAnonymousElement(tagName, content.stripScripts());
+      
+      if (position == 'top' || position == 'after') childNodes.reverse();
+      childNodes.each(insert.curry(element));
       
       content.evalScripts.bind(content).defer();
     }
@@ -166,7 +166,7 @@ Element.Methods = {
   inspect: function(element) {
     element = $(element);
     var result = '<' + element.tagName.toLowerCase();
-    $H({'id': 'id', 'className': 'class'})._each(function(pair) {
+    $H({'id': 'id', 'className': 'class'}).each(function(pair) {
       var property = pair.first(), attribute = pair.last();
       var value = (element[property] || '').toString();
       if (value) result += ' ' + attribute + '=' + value.inspect(true);
@@ -275,28 +275,15 @@ Element.Methods = {
   
   readAttribute: function(element, name) {
     element = $(element);
-    var t = Element._attributeTranslations.read;
-    if (t.names[name]) name = t.names[name];
-    
     if (Prototype.Browser.IE) {
-      // If we're reading from a form, avoid a conflict between an attribute
-      // and a child name.
-      var tagName = element.tagName.toUpperCase();
-      if (tagName == 'FORM' &&
-        !/^((child|parent)Node|(next|previous)Sibling)$/.test(name) &&
-          element.children[name]){
-        element = $(element.cloneNode(false));
-      }
-      if (tagName == 'IFRAME' && name == 'type')
-        return element.getAttribute(name, 1);
-      if (t.values[name])
-        return t.values[name](element, name);
+      var t = Element._attributeTranslations.read;
+      if (t.values[name]) return t.values[name](element, name);
+      if (t.names[name]) name = t.names[name];
       if (name.include(':')) {
         return (!element.attributes || !element.attributes[name]) ? null : 
          element.attributes[name].value;
       }
-    } else if (t.values[name]) return t.values[name](element, name);
-    
+    }
     return element.getAttribute(name);
   },
   
@@ -310,7 +297,7 @@ Element.Methods = {
     for (var attr in attributes) {
       name = t.names[attr] || attr;
       value = attributes[attr];
-      if (t.values[name]) name = t.values[name](element, value);
+      if (t.values[attr]) name = t.values[attr](element, value);
       if (value === false || value === null)
         element.removeAttribute(name);
       else if (value === true)
@@ -441,30 +428,25 @@ Element.Methods = {
   
   getDimensions: function(element) {
     element = $(element);
-    var display = element.getStyle('display'),
-     dimensions = { width: element.offsetWidth, height: element.offsetHeight };
+    var display = element.getStyle('display');
+    if (display != 'none' && display != null) // Safari bug
+      return {width: element.offsetWidth, height: element.offsetHeight};
     
-    // All width and height properties return 0 on elements with display:none,
-    // so show the element temporarily
-    if (display === "none" || display === null ||
-        dimensions.width === 0 || dimensions.height === 0) {
-      var els = element.style,
-       originalVisibility = els.visibility,
-       originalPosition   = els.position,
-       originalDisplay    = els.display;
-
-      els.visibility = 'hidden';
-      els.position = 'absolute';
-      els.display = 'block';
-      
-      dimensions = { width: element.offsetWidth, height: element.offsetHeight };
-
-      els.display = originalDisplay;
-      els.position = originalPosition;
-      els.visibility = originalVisibility;
-    }
-    
-    return dimensions;
+    // All *Width and *Height properties give 0 on elements with display none,
+    // so enable the element temporarily
+    var els = element.style;
+    var originalVisibility = els.visibility;
+    var originalPosition = els.position;
+    var originalDisplay = els.display;
+    els.visibility = 'hidden';
+    els.position = 'absolute';
+    els.display = 'block';
+    var originalWidth = element.clientWidth;
+    var originalHeight = element.clientHeight;
+    els.display = originalDisplay;
+    els.position = originalPosition;
+    els.visibility = originalVisibility;
+    return {width: originalWidth, height: originalHeight};    
   },
   
   makePositioned: function(element) {
@@ -512,263 +494,157 @@ Element.Methods = {
     element._overflow = null;
     return element;
   },
+
+  cumulativeOffset: function(element) {
+    var valueT = 0, valueL = 0;
+    do {
+      valueT += element.offsetTop  || 0;
+      valueL += element.offsetLeft || 0;
+      element = element.offsetParent;
+    } while (element);
+    return Element._returnOffset(valueL, valueT);
+  },
+
+  positionedOffset: function(element) {
+    var valueT = 0, valueL = 0;
+    do {
+      valueT += element.offsetTop  || 0;
+      valueL += element.offsetLeft || 0;
+      element = element.offsetParent;
+      if (element) {
+        if (element.tagName.toUpperCase() == 'BODY') break;
+        var p = Element.getStyle(element, 'position');
+        if (p !== 'static') break;
+      }
+    } while (element);
+    return Element._returnOffset(valueL, valueT);
+  },
+
+  absolutize: function(element) {
+    element = $(element);
+    if (element.getStyle('position') == 'absolute') return element;
+    // Position.prepare(); // To be done manually by Scripty when it needs it.
+
+    var offsets = element.positionedOffset();
+    var top     = offsets[1];
+    var left    = offsets[0];
+    var width   = element.clientWidth;
+    var height  = element.clientHeight;
+
+    element._originalLeft   = left - parseFloat(element.style.left  || 0);
+    element._originalTop    = top  - parseFloat(element.style.top || 0);
+    element._originalWidth  = element.style.width;
+    element._originalHeight = element.style.height;
+
+    element.style.position = 'absolute';
+    element.style.top    = top + 'px';
+    element.style.left   = left + 'px';
+    element.style.width  = width + 'px';
+    element.style.height = height + 'px';
+    return element;
+  },
+
+  relativize: function(element) {
+    element = $(element);
+    if (element.getStyle('position') == 'relative') return element;
+    // Position.prepare(); // To be done manually by Scripty when it needs it.
+
+    element.style.position = 'relative';
+    var top  = parseFloat(element.style.top  || 0) - (element._originalTop || 0);
+    var left = parseFloat(element.style.left || 0) - (element._originalLeft || 0);
+
+    element.style.top    = top + 'px';
+    element.style.left   = left + 'px';
+    element.style.height = element._originalHeight;
+    element.style.width  = element._originalWidth;
+    return element;
+  },
+
+  cumulativeScrollOffset: function(element) {
+    var valueT = 0, valueL = 0;
+    do {
+      valueT += element.scrollTop  || 0;
+      valueL += element.scrollLeft || 0; 
+      element = element.parentNode;
+    } while (element);
+    return Element._returnOffset(valueL, valueT);
+  },
   
   getOffsetParent: function(element) {
-    element = $(element);
+    if (element.offsetParent) return $(element.offsetParent);
+    if (element == document.body) return $(element);
     
-    // IE throws an error if the element is not in the document.
-    if (element.sourceIndex < 1) return $(document.body);
-    
-    var op = element.offsetParent, docElement = document.documentElement;
-    if (op && op !== docElement &&
-     Element.getStyle(op, 'position') !== 'static') {
-      return $(op);
-    }
-    
-    while ((element = element.parentNode) && element !== docElement &&
-     element !== document) {
-      if (Element.getStyle(element, 'position') !== 'static')
+    while ((element = element.parentNode) && element != document.body)
+      if (Element.getStyle(element, 'position') != 'static')
         return $(element);
-    }
 
     return $(document.body);
+  },
+
+  viewportOffset: function(forElement) {
+    var valueT = 0, valueL = 0;
+
+    var element = forElement;
+    do {
+      valueT += element.offsetTop  || 0;
+      valueL += element.offsetLeft || 0;
+
+      // Safari fix
+      if (element.offsetParent == document.body &&
+        Element.getStyle(element, 'position') == 'absolute') break;
+
+    } while (element = element.offsetParent);
+
+    element = forElement;
+    do {
+      if (!Prototype.Browser.Opera || (element.tagName && (element.tagName.toUpperCase() == 'BODY'))) {
+        valueT -= element.scrollTop  || 0;
+        valueL -= element.scrollLeft || 0;
+      }
+    } while (element = element.parentNode);
+
+    return Element._returnOffset(valueL, valueT);
+  },
+
+  clonePosition: function(element, source) {
+    var options = Object.extend({
+      setLeft:    true,
+      setTop:     true,
+      setWidth:   true,
+      setHeight:  true,
+      offsetTop:  0,
+      offsetLeft: 0
+    }, arguments[2] || { });
+
+    // find page position of source
+    source = $(source);
+    var p = source.viewportOffset();
+
+    // find coordinate system to use
+    element = $(element);
+    var delta = [0, 0];
+    var parent = null;
+    // delta [0,0] will do fine with position: fixed elements, 
+    // position:absolute needs offsetParent deltas
+    if (Element.getStyle(element, 'position') == 'absolute') {
+      parent = element.getOffsetParent();
+      delta = parent.viewportOffset();
+    }
+
+    // correct by body offsets (fixes Safari)
+    if (parent == document.body) {
+      delta[0] -= document.body.offsetLeft;
+      delta[1] -= document.body.offsetTop; 
+    }
+
+    // set position
+    if (options.setLeft)   element.style.left  = (p[0] - delta[0] + options.offsetLeft) + 'px';
+    if (options.setTop)    element.style.top   = (p[1] - delta[1] + options.offsetTop) + 'px';
+    if (options.setWidth)  element.style.width = source.offsetWidth + 'px';
+    if (options.setHeight) element.style.height = source.offsetHeight + 'px';
+    return element;
   }
 };
-
-Object.extend(Element.Methods, (function() {
-  function getNumericStyle(element, style) {
-    return parseFloat(Element.getStyle(element, style)) || 0;
-  }
-
-  function getOffsetParent(element) {
-    var op = Element.getOffsetParent(element);
-    if (op === document.body &&
-       (element.sourceIndex < 1 || !element.offsetParent || 
-        element.offsetParent === document.documentElement)) {
-      return false;
-    }
-    if (element.sourceIndex > 0 && element.offsetParent === document.documentElement) {
-      return element.offsetParent;
-    }
-    return op;
-  }
-
-  function getCssDimensions(element) {
-    var properties, dims = $w('width height'),
-     dimensions = Element.getDimensions(element);
-      
-    for(var i = 0; i < 2; i++) {
-      if (dims[i] === 'height') {
-        properties = $w('borderTopWidth padingTop borderBottomWidth paddingBottom');
-      } else {
-        properties = $w('borderLeftWidth paddingLeft borderRightWidth paddingRight');
-      }
-      dimensions[dims[i]] = Math.max(0, properties.inject(dimensions[dims[i]], function(memo, property) {
-        return memo - (parseFloat(Element.getStyle(element, property), 10) || 0);
-      }));
-    }
-    return dimensions;
-  }
-
-  function cloneDimension(element, source, dimension) {
-    var style = { }, properties;
-    
-    if (dimension === 'height') {
-      properties = $w('borderTopWidth marginTop paddingTop ' +
-       'borderBottomWidth marginBottom paddingBottom');
-    } else {
-      properties = $w('borderLeftWidth marginLeft paddingLeft ' +
-       'borderRightWidth marginRight paddingRight');
-    }
-    
-    style[dimension] = Element.getDimensions(source)[dimension];
-    
-    // Adjust element border and padding for accurate dimensions and
-    // margins for accurate position.    
-    for (var i = 0, property, value; property = properties[i]; i++) {
-      if (property.include('margin')) {
-        value = getNumericStyle(element, property);
-        style[property] = value + (getNumericStyle(source, property) -
-         value) + 'px';
-      } else {
-        value = getNumericStyle(source, property);
-        style[property] = value + 'px';
-        style[dimension] -= value;
-      }
-    }
-    style[dimension] += 'px';
-    Element.setStyle(element, style);
-  }
-  
-  return {
-  
-    absolutize: function(element) {
-      element = $(element);
-      if (Element.getStyle(element, 'position') === 'absolute')
-        return element;
-
-      var s = element.style,
-       offsets = Element.positionedOffset(element),
-       cssDimensions = getCssDimensions(element);
-
-      element._originalLeft       = offsets.left - getNumericStyle(element, 'left');
-      element._originalTop        = offsets.top  - getNumericStyle(element, 'top');
-      element._originalWidth      = s.width;
-      element._originalHeight     = s.height;   
-      element._originalMarginTop  = s.marginTop;
-      element._originalMarginLeft = s.marginLeft;
-
-      var before = Element.getDimensions(element);
-      s.position   = 'absolute';
-      s.marginTop  = '0px';
-      s.marginLeft = '0px';
-      s.top        = offsets.top  + 'px';
-      s.left       = offsets.left + 'px';
-      s.width      = cssDimensions.width  + 'px';
-      s.height     = cssDimensions.height + 'px';
-      
-      var after = Element.getDimensions(element);
-      s.width   = Math.max(0, cssDimensions.width  + (before.width  - after.width))  + 'px';
-      s.height  = Math.max(0, cssDimensions.height + (before.height - after.height)) + 'px';
-      
-      return element;
-    },
-
-    relativize: function(element) {
-      element = $(element);
-      if (Element.getStyle(element, 'position') === 'relative')
-        return element;
-
-      if (Object.isUndefined(element._originalTop))
-        throw new Error("Element#absolutize must be called first.");
-
-      var s = element.style;
-      s.position = 'relative';
-
-      var top  = getNumericStyle(element, 'top')  - (element._originalTop  || 0);
-      var left = getNumericStyle(element, 'left') - (element._originalLeft || 0);
-
-      s.top        = top  + 'px';
-      s.left       = left + 'px';
-      s.marginLeft = element._originalMarginLeft;
-      s.marginTop  = element._originalMarginTop;
-      s.width      = element._originalHeight;
-      s.height     = element._originalWidth;
-
-      element.removeAttribute('_originalTop');
-      if (!Object.isUndefined(element._originalTop))
-        delete element._originalTop;
-      return element;
-    },
-  
-    cumulativeScrollOffset: function(element) {
-      element = $(element);
-      var valueT = 0, valueL = 0, end = document;
-      
-      if (Prototype.Browser.Opera && 
-       parseFloat(window.opera.version()) < 9.5 &&
-       element !== document.body) {         
-        end = document.documentElement;
-      }
-      
-      if (Element.getStyle(element, 'position') !== 'fixed') {
-        while ((element = element.parentNode) &&
-         element.nodeType === 1 && element !== end) {
-          if (Element.getStyle(element, 'position') === 'fixed') break;
-          valueT += element.scrollTop  || 0;
-          valueL += element.scrollLeft || 0;
-        }
-      }
-      return Element._returnOffset(valueL, valueT);
-    },
-
-    cumulativeOffset: function(element) {
-      element = $(element);
-      var valueT = 0, valueL = 0;
-      do {
-        valueT += element.offsetTop  || 0;
-        valueL += element.offsetLeft || 0;
-      } while (element = getOffsetParent(element));
-
-      return Element._returnOffset(valueL, valueT);
-    },
-
-    positionedOffset: function(element) {
-      element = $(element);
-      var valueT = 0, valueL = 0;
-      do {
-        valueT += element.offsetTop  || 0;
-        valueL += element.offsetLeft || 0;
-        element = getOffsetParent(element);
-      } while (element && element !== document.body &&
-        Element.getStyle(element, 'position') === 'static');
-
-      return Element._returnOffset(valueL, valueT);
-    },
-
-    viewportOffset: function(forElement) {
-      forElement = $(forElement);
-      var op, element = forElement, valueT = 0, valueL = 0;
-
-      do {
-        valueT += element.offsetTop  || 0;
-        valueL += element.offsetLeft || 0;
-
-        // Safari fix
-        op = getOffsetParent(element);
-        if (op === document.body && Element.getStyle(element,
-         'position') === 'absolute') break;
-      } while (element = op);
-
-      var scrollOffset = Element.cumulativeScrollOffset(forElement);
-      valueT -= scrollOffset.top;
-      valueL -= scrollOffset.left;
-
-      return Element._returnOffset(valueL, valueT);
-    },
-
-    clonePosition: function(element, source) {
-      element = $(element);
-      source = $(source);
-      var options = Object.extend({
-        setLeft:    true,
-        setTop:     true,
-        setWidth:   true,
-        setHeight:  true,
-        offsetTop:  0,
-        offsetLeft: 0
-      }, arguments[2] || { });
-
-      // find coordinate system to use
-      // delta [0,0] will do fine with position: fixed elements;
-      // position: absolute needs offsetParent deltas
-      var parent, delta = [0, 0];
-      if (Element.getStyle(element, 'position') == 'absolute') {
-        parent = Element.getOffsetParent(element);
-        delta  = Element.viewportOffset(parent);
-      }
-
-      // correct by body offsets (fixes Safari)
-      if (parent == document.body) {
-        delta[0] -= document.body.offsetLeft;
-        delta[1] -= document.body.offsetTop;
-      }
-      
-      // find page position of source
-      var p = Element.viewportOffset(source);
-
-      // set dimensions and position
-      if (options.setWidth)  cloneDimension(element, source, 'width');
-      if (options.setHeight) cloneDimension(element, source, 'height');
-      if (options.setLeft)
-        element.style.left = (p[0] - delta[0] + options.offsetLeft + 'px');
-      if (options.setTop)
-        element.style.top  = (p[1] - delta[1] + options.offsetTop  + 'px');
-
-      return element;
-    }
-  };
-})());
 
 Element.Methods.identify.counter = 1;
 
@@ -784,26 +660,8 @@ Element._attributeTranslations = {
       htmlFor:   'for'      
     }, 
     values: { }
-  },
-  
-  read: {
-    names: { },
-    values: {
-      _flag: function(element, attribute) {
-        return $(element).hasAttribute(attribute) ? attribute : null;
-      }
-    }
   }
 };
-
-(function(v) {
-  Object.extend(v, {
-    disabled: v._flag,
-    checked:  v._flag,
-    readonly: v._flag,
-    multiple: v._flag
-  });
-})(Element._attributeTranslations.read.values);
 
 if (Prototype.Browser.Opera) { 
   Element.Methods.getStyle = Element.Methods.getStyle.wrap( 
@@ -842,7 +700,7 @@ if (Prototype.Browser.Opera) {
   
   Element.Methods.readAttribute = Element.Methods.readAttribute.wrap(
     function(proceed, element, attribute) {
-      if (attribute === 'title') return $(element).title;
+      if (attribute === 'title') return element.title;
       return proceed(element, attribute);
     }
   );  
@@ -851,30 +709,50 @@ if (Prototype.Browser.Opera) {
 else if (Prototype.Browser.IE) {
   // IE doesn't report offsets correctly for static elements, so we change them
   // to "relative" to get the values, then change them back.  
-  $w('positionedOffset viewportOffset')._each(function(method) {
+  Element.Methods.getOffsetParent = Element.Methods.getOffsetParent.wrap(
+    function(proceed, element) {
+      element = $(element);
+      // IE throws an error if element is not in document
+      try { element.offsetParent }
+      catch(e) { return $(document.body) }
+      var position = element.getStyle('position');
+      if (position !== 'static') return proceed(element);
+      element.setStyle({ position: 'relative' });
+      var value = proceed(element);
+      element.setStyle({ position: position });
+      return value;
+    }
+  );
+  
+  $w('positionedOffset viewportOffset').each(function(method) {
     Element.Methods[method] = Element.Methods[method].wrap(
       function(proceed, element) {
         element = $(element);
-        
-        var position = Element.getStyle(element, 'position');
+        try { element.offsetParent }
+        catch(e) { return Element._returnOffset(0,0) }
+        var position = element.getStyle('position');
         if (position !== 'static') return proceed(element);
-        
         // Trigger hasLayout on the offset parent so that IE6 reports
         // accurate offsetTop and offsetLeft values for position: fixed.
-        var offsetParent = Element.getOffsetParent(element),
-         style = { position: 'relative' };
-        if (Element.getStyle(offsetParent, 'position') === 'fixed'
-         && !offsetParent.currentStyle.hasLayout)
-          style.zoom = '1';
-        
-        Element.setStyle(element, style);
+        var offsetParent = element.getOffsetParent();
+        if (offsetParent && offsetParent.getStyle('position') === 'fixed')
+          offsetParent.setStyle({ zoom: 1 });
+        element.setStyle({ position: 'relative' });
         var value = proceed(element);
-        element.style.position = position;
+        element.setStyle({ position: position });
         return value;
       }
     );
   });
   
+  Element.Methods.cumulativeOffset = Element.Methods.cumulativeOffset.wrap(
+    function(proceed, element) {
+      try { element.offsetParent }
+      catch(e) { return Element._returnOffset(0,0) }
+      return proceed(element);
+    }
+  );
+    
   Element.Methods.getStyle = function(element, style) {
     element = $(element);
     style = (style == 'float' || style == 'cssFloat') ? 'styleFloat' : style.camelize();
@@ -915,75 +793,72 @@ else if (Prototype.Browser.IE) {
       'alpha(opacity=' + (value * 100) + ')';
     return element;   
   };
-  
-  (function(t) {
-    t.has = { };
-    t.write.names = { };
-    
-    $w('cellPadding cellSpacing colSpan rowSpan vAlign dateTime accessKey ' +
-       'tabIndex encType maxLength readOnly longDesc frameBorder')._each(function(attr) {
-      var lower = attr.toLowerCase();
-      t.has[lower] = attr;
-      t.read.names[lower] = attr;
-      t.write.names[lower] = attr;
-    });
-    
-    [t.write.names, t.read.names]._each(function(n) {
-      Object.extend(n, {
-        'class': 'className',
-        'for': 'htmlFor'
-      });
-    });
-  })(Element._attributeTranslations);
-  
-  Object.extend(Element._attributeTranslations.read.values, {
 
-    _getAttr: function(element, attribute) {
-      return element.getAttribute(attribute, 2);
-    },
-    
-    _getAttrNode: function(element, attribute) {
-      var node = element.getAttributeNode(attribute);
-      return node ? node.value : "";
-    },
-    
-    _getEv: function(element, attribute) {
-      attribute = element.getAttribute(attribute);
-      if (!Object.isFunction(attribute)) return null;
-      var source = Function.prototype.toString.call(attribute);
-      return source.indexOf('function anonymous()\n{\n') === 0 ? source.slice(23, -2) : null;
-    },
-    
-    style: function(element) {
-      return element.style.cssText.toLowerCase();
-    },
-    
-    title: function(element) {
-      return element.title;
+  Element._attributeTranslations = {
+    read: {
+      names: {
+        'class': 'className',
+        'for':   'htmlFor'
+      },
+      values: {
+        _getAttr: function(element, attribute) {
+          return element.getAttribute(attribute, 2);
+        },
+        _getAttrNode: function(element, attribute) {
+          var node = element.getAttributeNode(attribute);
+          return node ? node.value : "";
+        },
+        _getEv: function(element, attribute) {
+          attribute = element.getAttribute(attribute);
+          return attribute ? attribute.toString().slice(23, -2) : null;
+        },
+        _flag: function(element, attribute) {
+          return $(element).hasAttribute(attribute) ? attribute : null;
+        },
+        style: function(element) {
+          return element.style.cssText.toLowerCase();
+        },
+        title: function(element) {
+          return element.title;
+        }
+      }
     }
-  });
+  };
   
-  Object.extend(Element._attributeTranslations.write.values, {
-    checked: function(element, value) {
-      element.checked = !!value;
-    },
-    
-    encType: function(element, value) {  
-      element.getAttributeNode('encType').value = value;  
-    },
-    
-    style: function(element, value) {
-      element.style.cssText = value ? value : '';
+  Element._attributeTranslations.write = {
+    names: Object.extend({
+      cellpadding: 'cellPadding',
+      cellspacing: 'cellSpacing'
+    }, Element._attributeTranslations.read.names),
+    values: {
+      checked: function(element, value) {
+        element.checked = !!value;
+      },
+      
+      style: function(element, value) {
+        element.style.cssText = value ? value : '';
+      }
     }
+  };
+  
+  Element._attributeTranslations.has = {};
+    
+  $w('colSpan rowSpan vAlign dateTime accessKey tabIndex ' +
+      'encType maxLength readOnly longDesc frameBorder').each(function(attr) {
+    Element._attributeTranslations.write.names[attr.toLowerCase()] = attr;
+    Element._attributeTranslations.has[attr.toLowerCase()] = attr;
   });
   
   (function(v) {
-    delete v.readonly;
     Object.extend(v, {
       href:        v._getAttr,
       src:         v._getAttr,
       type:        v._getAttr,
       action:      v._getAttrNode,
+      disabled:    v._flag,
+      checked:     v._flag,
+      readonly:    v._flag,
+      multiple:    v._flag,
       onload:      v._getEv,
       onunload:    v._getEv,
       onclick:     v._getEv,
@@ -1001,11 +876,7 @@ else if (Prototype.Browser.IE) {
       onsubmit:    v._getEv,
       onreset:     v._getEv,
       onselect:    v._getEv,
-      onchange:    v._getEv,
-      readOnly:    v._flag.wrap(function(proceed, element, attribute) {
-        attribute = proceed(element, attribute);
-        return attribute? 'readonly' : null;
-      })
+      onchange:    v._getEv
     });
   })(Element._attributeTranslations.read.values);
 }
@@ -1026,7 +897,7 @@ else if (Prototype.Browser.WebKit) {
       (value < 0.00001) ? 0 : value;
     
     if (value == 1)
-      if (element.tagName.toUpperCase() == 'IMG' && element.width) { 
+      if(element.tagName.toUpperCase() == 'IMG' && element.width) { 
         element.width++; element.width--;
       } else try {
         var n = document.createTextNode(' ');
@@ -1041,7 +912,6 @@ else if (Prototype.Browser.WebKit) {
   // positioned.  For performance reasons, redefine Element#cumulativeOffset for
   // KHTML/WebKit only.
   Element.Methods.cumulativeOffset = function(element) {
-    element = $(element);
     var valueT = 0, valueL = 0;
     do {
       valueT += element.offsetTop  || 0;
@@ -1065,30 +935,18 @@ if (Prototype.Browser.IE || Prototype.Browser.Opera) {
     if (Object.isElement(content)) return element.update().insert(content);
     
     content = Object.toHTML(content);
-    var tagName = element.tagName.toUpperCase(),
-     stripped = content.stripScripts();
+    var tagName = element.tagName.toUpperCase();
     
     if (tagName in Element._insertionTranslations.tags) {
-      var children = element.childNodes, length = children.length;
-      while (length--) element.removeChild(children[length]);
-      element.appendChild(Element._getContentFromAnonymousElement(tagName, stripped));
+      $A(element.childNodes).each(function(node) { element.removeChild(node) });
+      Element._getContentFromAnonymousElement(tagName, content.stripScripts())
+        .each(function(node) { element.appendChild(node) });
     }
-    else element.innerHTML = stripped;
+    else element.innerHTML = content.stripScripts();
     
     content.evalScripts.bind(content).defer();
     return element;
   };
-}
-
-if (Prototype.Browser.IE) {
-  // Wrap Element#update to clean up event handlers on 
-  // newly-removed elements. Prevents memory leaks in IE.  
-  Element.Methods.update = Element.Methods.update.wrap(
-    function(proceed, element, contents) {
-      Element.select(element, '*')._each(Event.stopObserving);
-      return proceed(element, contents);
-    }
-  );  
 }
 
 if ('outerHTML' in document.createElement('div')) {
@@ -1102,18 +960,18 @@ if ('outerHTML' in document.createElement('div')) {
     }
 
     content = Object.toHTML(content);
-    var parent = element.parentNode, 
-     tagName   = parent.tagName.toUpperCase(),
-     stripped  = content.stripScripts();
+    var parent = element.parentNode, tagName = parent.tagName.toUpperCase();
     
-    // Avoid outerHTML in IE because it incorrectly removes the replaced
-    // elements' child nodes.
-    if (Element._insertionTranslations.tags[tagName] || Prototype.Browser.IE) {
-      var nextSibling = Element.next(element),
-       fragment = Element._getContentFromAnonymousElement(tagName, stripped);
-      parent.replaceChild(fragment, element);
+    if (Element._insertionTranslations.tags[tagName]) {
+      var nextSibling = element.next();
+      var fragments = Element._getContentFromAnonymousElement(tagName, content.stripScripts());
+      parent.removeChild(element);
+      if (nextSibling)
+        fragments.each(function(node) { parent.insertBefore(node, nextSibling) });
+      else 
+        fragments.each(function(node) { parent.appendChild(node) });
     }
-    else element.outerHTML = stripped;
+    else element.outerHTML = content.stripScripts();
     
     content.evalScripts.bind(content).defer();
     return element;
@@ -1127,27 +985,14 @@ Element._returnOffset = function(l, t) {
   return result;
 };
 
-Object.extend(Element._getContentFromAnonymousElement = function(tagName, html) {
-  var callee = arguments.callee, node = callee.div,
-  t = Element._insertionTranslations.tags[tagName];
-  
+Element._getContentFromAnonymousElement = function(tagName, html) {
+  var div = new Element('div'), t = Element._insertionTranslations.tags[tagName];
   if (t) {
-    node.innerHTML= t[0] + html + t[1];
-    t[2].times(function() { node = node.firstChild });
-  } else node.innerHTML = html;
-  
-  if (node.removeNode) {
-    // Shortcut for IE removing the parent but keeping the children
-    callee.fragment.appendChild(node).removeNode();
-  } else {
-    var length = node.childNodes.length;
-    while (length--) callee.fragment.insertBefore(node.childNodes[length], callee.fragment.firstChild);
-  }
-  return callee.fragment;
-}, {
-  div: document.createElement('div'),
-  fragment: document.createDocumentFragment()
-});
+    div.innerHTML = t[0] + html + t[1];
+    t[2].times(function() { div = div.firstChild });
+  } else div.innerHTML = html;
+  return $A(div.childNodes);
+};
 
 Element._insertionTranslations = {
   before: function(element, node) {
@@ -1180,8 +1025,6 @@ Element._insertionTranslations = {
 }).call(Element._insertionTranslations);
 
 Element.Methods.Simulated = {
-  // No use of $ in this function in order to keep things fast.
-  // Used by the Selector class.  
   hasAttribute: function(element, attribute) {
     attribute = Element._attributeTranslations.has[attribute] || attribute;
     var node = $(element).getAttributeNode(attribute);
@@ -1208,10 +1051,7 @@ Element.extend = (function() {
   
   var extend = Object.extend(function(element) {
     if (!element || element._extendedByPrototype || 
-        element.nodeType != 1 || element === window) return element;
-        
-    // Filter out XML nodes in IE.
-    if (!(element.ownerDocument || element).body) return element;
+        element.nodeType != 1 || element == window) return element;
 
     var methods = Object.clone(Methods),
       tagName = element.tagName.toUpperCase(), property, value;
@@ -1242,9 +1082,6 @@ Element.extend = (function() {
   return extend;
 })();
 
-
-// No use of $ in this function in order to keep things fast.
-// Used by the Selector class.
 Element.hasAttribute = function(element, attribute) {
   if (element.hasAttribute) return element.hasAttribute(attribute);
   return Element.Methods.Simulated.hasAttribute(element, attribute);
@@ -1257,7 +1094,6 @@ Element.addMethods = function(methods) {
     Object.extend(Form, Form.Methods);
     Object.extend(Form.Element, Form.Element.Methods);
     Object.extend(Element.Methods.ByTag, {
-      "BUTTON":   Object.clone(Form.Element.Methods),
       "FORM":     Object.clone(Form.Methods),
       "INPUT":    Object.clone(Form.Element.Methods),
       "SELECT":   Object.clone(Form.Element.Methods),
@@ -1272,7 +1108,7 @@ Element.addMethods = function(methods) {
   
   if (!tagName) Object.extend(Element.Methods, methods || { });  
   else {
-    if (Object.isArray(tagName)) tagName._each(extend);
+    if (Object.isArray(tagName)) tagName.each(extend);
     else extend(tagName);
   }
   
