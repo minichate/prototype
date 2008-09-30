@@ -1,18 +1,18 @@
 var Ajax = {
   getTransport: function() {
     return Try.these(
+      function() {return new XMLHttpRequest()},
       function() {return new ActiveXObject('Msxml2.XMLHTTP')},
-      function() {return new ActiveXObject('Microsoft.XMLHTTP')},
-      function() {return new XMLHttpRequest()}
+      function() {return new ActiveXObject('Microsoft.XMLHTTP')}
     ) || false;
   },
-
+  
   activeRequestCount: 0
 };
 
 Ajax.Responders = {
   responders: [],
-
+  
   _each: function(iterator) {
     this.responders._each(iterator);
   },
@@ -21,13 +21,13 @@ Ajax.Responders = {
     if (!this.include(responder))
       this.responders.push(responder);
   },
-
+  
   unregister: function(responder) {
     this.responders = this.responders.without(responder);
   },
-
+  
   dispatch: function(callback, request, transport, json) {
-    this._each(function(responder) {
+    this.each(function(responder) {
       if (Object.isFunction(responder[callback])) {
         try {
           responder[callback].apply(responder, [request, transport, json]);
@@ -40,7 +40,7 @@ Ajax.Responders = {
 Object.extend(Ajax.Responders, Enumerable);
 
 Ajax.Responders.register({
-  onCreate:   function() { Ajax.activeRequestCount++ },
+  onCreate:   function() { Ajax.activeRequestCount++ }, 
   onComplete: function() { Ajax.activeRequestCount-- }
 });
 
@@ -56,10 +56,10 @@ Ajax.Base = Class.create({
       evalJS:       true
     };
     Object.extend(this.options, options || { });
-
+    
     this.options.method = this.options.method.toLowerCase();
-
-    if (Object.isString(this.options.parameters))
+    
+    if (Object.isString(this.options.parameters)) 
       this.options.parameters = this.options.parameters.toQueryParams();
     else if (Object.isHash(this.options.parameters))
       this.options.parameters = this.options.parameters.toObject();
@@ -68,7 +68,7 @@ Ajax.Base = Class.create({
 
 Ajax.Request = Class.create(Ajax.Base, {
   _complete: false,
-
+  
   initialize: function($super, url, options) {
     $super(options);
     this.transport = Ajax.getTransport();
@@ -85,7 +85,7 @@ Ajax.Request = Class.create(Ajax.Base, {
       params['_method'] = this.method;
       this.method = 'post';
     }
-
+    
     this.parameters = params;
 
     if (params = Object.toQueryString(params)) {
@@ -95,17 +95,17 @@ Ajax.Request = Class.create(Ajax.Base, {
       else if (/Konqueror|Safari|KHTML/.test(navigator.userAgent))
         params += '&_=';
     }
-
+      
     try {
       var response = new Ajax.Response(this);
       if (this.options.onCreate) this.options.onCreate(response);
       Ajax.Responders.dispatch('onCreate', this, response);
-
-      this.transport.open(this.method.toUpperCase(), this.url,
+    
+      this.transport.open(this.method.toUpperCase(), this.url, 
         this.options.asynchronous);
 
       if (this.options.asynchronous) this.respondToReadyState.bind(this).defer(1);
-
+      
       this.transport.onreadystatechange = this.onStateChange.bind(this);
       this.setRequestHeaders();
 
@@ -115,7 +115,7 @@ Ajax.Request = Class.create(Ajax.Base, {
       /* Force Firefox to handle ready state 4 for synchronous requests */
       if (!this.options.asynchronous && this.transport.overrideMimeType)
         this.onStateChange();
-
+        
     }
     catch (e) {
       this.dispatchException(e);
@@ -127,7 +127,7 @@ Ajax.Request = Class.create(Ajax.Base, {
     if (readyState > 1 && !((readyState == 4) && this._complete))
       this.respondToReadyState(this.transport.readyState);
   },
-
+  
   setRequestHeaders: function() {
     var headers = {
       'X-Requested-With': 'XMLHttpRequest',
@@ -138,42 +138,42 @@ Ajax.Request = Class.create(Ajax.Base, {
     if (this.method == 'post') {
       headers['Content-type'] = this.options.contentType +
         (this.options.encoding ? '; charset=' + this.options.encoding : '');
-
+      
       /* Force "Connection: close" for older Mozilla browsers to work
        * around a bug where XMLHttpRequest sends an incorrect
-       * Content-length header. See Mozilla Bugzilla #246651.
+       * Content-length header. See Mozilla Bugzilla #246651. 
        */
       if (this.transport.overrideMimeType &&
           (navigator.userAgent.match(/Gecko\/(\d{4})/) || [0,2005])[1] < 2005)
             headers['Connection'] = 'close';
     }
-
+    
     // user-defined headers
     if (typeof this.options.requestHeaders == 'object') {
       var extras = this.options.requestHeaders;
 
       if (Object.isFunction(extras.push))
-        for (var i = 0, length = extras.length; i < length; i += 2)
+        for (var i = 0, length = extras.length; i < length; i += 2) 
           headers[extras[i]] = extras[i+1];
       else
-        $H(extras)._each(function(pair) { headers[pair.key] = pair.value });
+        $H(extras).each(function(pair) { headers[pair.key] = pair.value });
     }
 
-    for (var name in headers)
+    for (var name in headers) 
       this.transport.setRequestHeader(name, headers[name]);
   },
-
+  
   success: function() {
     var status = this.getStatus();
     return !status || (status >= 200 && status < 300);
   },
-
+    
   getStatus: function() {
     try {
       return this.transport.status || 0;
-    } catch (e) { return 0 }
+    } catch (e) { return 0 } 
   },
-
+  
   respondToReadyState: function(readyState) {
     var state = Ajax.Request.Events[readyState], response = new Ajax.Response(this);
 
@@ -186,10 +186,10 @@ Ajax.Request = Class.create(Ajax.Base, {
       } catch (e) {
         this.dispatchException(e);
       }
-
+      
       var contentType = response.getHeader('Content-type');
       if (this.options.evalJS == 'force'
-          || (this.options.evalJS && this.isSameOrigin() && contentType
+          || (this.options.evalJS && this.isSameOrigin() && contentType 
           && contentType.match(/^\s*(text|application)\/(x-)?(java|ecma)script(;.*)?\s*$/i)))
         this.evalResponse();
     }
@@ -200,13 +200,13 @@ Ajax.Request = Class.create(Ajax.Base, {
     } catch (e) {
       this.dispatchException(e);
     }
-
+    
     if (state == 'Complete') {
       // avoid memory leak in MSIE: clean up
       this.transport.onreadystatechange = Prototype.emptyFunction;
     }
   },
-
+  
   isSameOrigin: function() {
     var m = this.url.match(/^\s*https?:\/\/[^\/]*/);
     return !m || (m[0] == '#{protocol}//#{domain}#{port}'.interpolate({
@@ -215,13 +215,13 @@ Ajax.Request = Class.create(Ajax.Base, {
       port: location.port ? ':' + location.port : ''
     }));
   },
-
+  
   getHeader: function(name) {
     try {
       return this.transport.getResponseHeader(name) || null;
     } catch (e) { return null }
   },
-
+  
   evalResponse: function() {
     try {
       return eval((this.transport.responseText || '').unfilterJSON());
@@ -236,7 +236,7 @@ Ajax.Request = Class.create(Ajax.Base, {
   }
 });
 
-Ajax.Request.Events =
+Ajax.Request.Events = 
   ['Uninitialized', 'Loading', 'Loaded', 'Interactive', 'Complete'];
 
 Ajax.Response = Class.create({
@@ -245,47 +245,47 @@ Ajax.Response = Class.create({
     var transport  = this.transport  = request.transport,
         readyState = this.readyState = transport.readyState;
     
-    if ((readyState > 2 && !Prototype.Browser.IE) || readyState == 4) {
+    if((readyState > 2 && !Prototype.Browser.IE) || readyState == 4) {
       this.status       = this.getStatus();
       this.statusText   = this.getStatusText();
       this.responseText = String.interpret(transport.responseText);
       this.headerJSON   = this._getHeaderJSON();
     }
     
-    if (readyState == 4) {
+    if(readyState == 4) {
       var xml = transport.responseXML;
       this.responseXML  = Object.isUndefined(xml) ? null : xml;
       this.responseJSON = this._getResponseJSON();
     }
   },
-
+  
   status:      0,
   statusText: '',
-
+  
   getStatus: Ajax.Request.prototype.getStatus,
-
+  
   getStatusText: function() {
     try {
       return this.transport.statusText || '';
     } catch (e) { return '' }
   },
-
+  
   getHeader: Ajax.Request.prototype.getHeader,
-
+  
   getAllHeaders: function() {
     try {
       return this.getAllResponseHeaders();
-    } catch (e) { return null }
+    } catch (e) { return null } 
   },
-
+  
   getResponseHeader: function(name) {
     return this.transport.getResponseHeader(name);
   },
-
+  
   getAllResponseHeaders: function() {
     return this.transport.getAllResponseHeaders();
   },
-
+  
   _getHeaderJSON: function() {
     var json = this.getHeader('X-JSON');
     if (!json) return null;
@@ -297,11 +297,11 @@ Ajax.Response = Class.create({
       this.request.dispatchException(e);
     }
   },
-
+  
   _getResponseJSON: function() {
     var options = this.request.options;
-    if (!options.evalJSON || (options.evalJSON != 'force' &&
-      !(this.getHeader('Content-type') || '').include('application/json')) ||
+    if (!options.evalJSON || (options.evalJSON != 'force' && 
+      !(this.getHeader('Content-type') || '').include('application/json')) || 
         this.responseText.blank())
           return null;
     try {
@@ -331,11 +331,11 @@ Ajax.Updater = Class.create(Ajax.Request, {
   },
 
   updateContent: function(responseText) {
-    var receiver = this.container[this.success() ? 'success' : 'failure'],
-     options = this.options;
-
+    var receiver = this.container[this.success() ? 'success' : 'failure'], 
+        options = this.options;
+    
     if (!options.evalScripts) responseText = responseText.stripScripts();
-
+    
     if (receiver = $(receiver)) {
       if (options.insertion) {
         if (Object.isString(options.insertion)) {
@@ -343,7 +343,7 @@ Ajax.Updater = Class.create(Ajax.Request, {
           receiver.insert(insertion);
         }
         else options.insertion(receiver, responseText);
-      }
+      } 
       else receiver.update(responseText);
     }
   }
@@ -356,7 +356,7 @@ Ajax.PeriodicalUpdater = Class.create(Ajax.Base, {
 
     this.frequency = (this.options.frequency || 2);
     this.decay = (this.options.decay || 1);
-
+    
     this.updater = { };
     this.container = container;
     this.url = url;
@@ -376,12 +376,8 @@ Ajax.PeriodicalUpdater = Class.create(Ajax.Base, {
   },
 
   updateComplete: function(response) {
-  	if (this.options.onEachComplete){
-		this.options.onEachComplete(this);
-	}
-  
     if (this.options.decay) {
-      this.decay = (response.responseText == this.lastText ?
+      this.decay = (response.responseText == this.lastText ? 
         this.decay * this.options.decay : 1);
 
       this.lastText = response.responseText;

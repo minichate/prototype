@@ -108,8 +108,6 @@ new Test.Unit.Runner({
     this.assertEqual(1, count);
     span.fire("test:somethingElseHappened");
     this.assertEqual(2, count);
-    span.stopObserving("test:somethingHappened", observer); 
-    span.stopObserving("test:somethingElseHappened", observer);   
   },
   
   testStopObservingWithoutArguments: function() {
@@ -122,11 +120,6 @@ new Test.Unit.Runner({
     this.assertEqual(0, count);
     span.fire("test:somethingElseHappened");
     this.assertEqual(0, count);
-
-    this.assertEqual(window, Event.stopObserving(window));
-    
-    // test element with no observers
-    this.assertNothingRaised(function() { $(document.body).stopObserving() });
   },
   
   testStopObservingWithoutHandlerArgument: function() {
@@ -142,9 +135,6 @@ new Test.Unit.Runner({
     span.stopObserving("test:somethingElseHappened");
     span.fire("test:somethingElseHappened");
     this.assertEqual(1, count);
-    
-    // test element with no observers
-    this.assertNothingRaised(function() { $(document.body).stopObserving("test:somethingHappened") });
   },
   
   testStopObservingRemovesHandlerFromCache: function() {
@@ -179,42 +169,6 @@ new Test.Unit.Runner({
     span.observe("test:somethingHappened", observer);
     this.assertEqual(span, span.observe("test:somethingHappened", observer)); // try to reuse the same observer
     span.stopObserving();
-  },
-
-  testObserveInsideHandlers: function() {
-    var fired = false, observer = function(event) {
-      fired = true;
-    };
-    
-    document.observe("test:somethingHappened", function() {
-      document.observe("test:somethingHappened", observer);
-    });
-    
-    document.fire("test:somethingHappened");
-    this.assert(!fired);
-    
-    document.fire("test:somethingHappened");
-    this.assert(fired);
-    document.stopObserving("test:somethingHappened");
-  },
-
-  testStopObservingInsideHandlers: function() {
-    var fired = false, observer = function(event) {
-      fired = true;
-    };
-    
-    document.observe("test:somethingHappened", observer);
-    document.observe("test:somethingHappened", function() {
-      document.stopObserving("test:somethingHappened", observer);
-    });
-    
-    document.fire("test:somethingHappened");
-    this.assert(fired);
-    
-    fired = false;
-    document.fire("test:somethingHappened");
-    document.stopObserving("test:somethingHappened");
-    this.assert(!fired);
   },
 
   testDocumentLoaded: function() {

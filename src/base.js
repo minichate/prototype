@@ -138,11 +138,11 @@ Object.extend(Object, {
   },
   
   isHash: function(object) {
-    return !!(object && object instanceof Hash);
+    return object instanceof Hash;
   },
   
   isFunction: function(object) {
-    return typeof object == "function" && typeof object.call == "function";
+    return typeof object == "function";
   },
   
   isString: function(object) {
@@ -150,7 +150,7 @@ Object.extend(Object, {
   },
   
   isNumber: function(object) {
-    return typeof object == "number" && isFinite(object);
+    return typeof object == "number";
   },
   
   isUndefined: function(object) {
@@ -168,30 +168,16 @@ Object.extend(Function.prototype, {
   bind: function() {
     if (arguments.length < 2 && Object.isUndefined(arguments[0])) return this;
     var __method = this, args = $A(arguments), object = args.shift();
-    
-    // Avoid using Array#concat when only the context argument is given.
-    if (args.length) {
-      return function() {
-        return __method.apply(object, args.concat($A(arguments)));
-      };
-    }
     return function() {
-      return __method.apply(object, arguments);
-    };
+      return __method.apply(object, args.concat($A(arguments)));
+    }
   },
   
   bindAsEventListener: function() {
     var __method = this, args = $A(arguments), object = args.shift();
-
-    // Avoid using Array#concat when only the context argument is given.
-    if (args.length) {
-      return function(event) {
-        return __method.apply(object, [event || window.event].concat(args));
-      };
-    }
     return function(event) {
-      return __method.apply(object, [event || window.event]);
-    };
+      return __method.apply(object, [event || window.event].concat(args));
+    }
   },
   
   curry: function() {

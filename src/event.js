@@ -60,7 +60,6 @@ Event.Methods = (function() {
     
     element: function(event) {
       event = Event.extend(event);
-      var node = event.target, currentTarget = event.currentTarget, type = event.type;
       
       var node          = event.target,
           type          = event.type,
@@ -128,13 +127,13 @@ Event.extend = (function() {
       if (!event) return false;
       if (event._extendedByPrototype) return event;
       
+      event._extendedByPrototype = Prototype.emptyFunction;
       var pointer = Event.pointer(event);
       Object.extend(event, {
-        _extendedByPrototype: Prototype.emptyFunction,
-        target:        Element.extend(event.srcElement),
+        target: event.srcElement,
         relatedTarget: Event.relatedTarget(event),
-        pageX:         pointer.x,
-        pageY:         pointer.y
+        pageX:  pointer.x,
+        pageY:  pointer.y
       });
       return Object.extend(event, methods);
     };
@@ -150,13 +149,10 @@ Object.extend(Event, (function() {
   var cache = Event.cache;
 
   function getEventID(element) {
-    // Event ID is stored as the 0th index in a one-item array so that it
-    // won't get copied to a new node when cloneNode is called.
-    if (element === window) return 1;
     if (element._prototypeEventID) return element._prototypeEventID[0];
-    return element._prototypeEventID = [arguments.callee.id++];
+    arguments.callee.id = arguments.callee.id || 1;
+    return element._prototypeEventID = [++arguments.callee.id];
   }
-  getEventID.id = 2;
   
   function getDOMEventName(eventName) {
     if (eventName && eventName.include(':')) return "dataavailable";
@@ -173,31 +169,27 @@ Object.extend(Event, (function() {
   }
   
   function createWrapper(element, eventName, handler) {
-    var id = getEventID(element), c = getCacheForID(id);
-
-    // Attach the element itself onto its cache entry so we can retrieve it for
-    // cleanup on page unload.
-    if (!c.element) c.element = element;
-
-    var w = getWrappersForEventName(id, eventName);
-    if (w.pluck("handler").include(handler)) return false;
+    var id = getEventID(element);
+    var c = getWrappersForEventName(id, eventName);
+    if (c.pluck("handler").include(handler)) return false;
     
     var wrapper = function(event) {
       if (!Event || !Event.extend ||
         (event.eventName && event.eventName != eventName))
           return false;
       
-      handler.call(element, Event.extend(event));
+      Event.extend(event);
+      handler.call(element, event);
     };
     
     wrapper.handler = handler;
-    w.push(wrapper);
+    c.push(wrapper);
     return wrapper;
   }
   
   function findWrapper(id, eventName, handler) {
-    var w = getWrappersForEventName(id, eventName);
-    return w.find(function(wrapper) { return wrapper.handler == handler });
+    var c = getWrappersForEventName(id, eventName);
+    return c.find(function(wrapper) { return wrapper.handler == handler });
   }
   
   function destroyWrapper(id, eventName, handler) {
@@ -206,45 +198,24 @@ Object.extend(Event, (function() {
     c[eventName] = c[eventName].without(findWrapper(id, eventName, handler));
   }
   
-  // Loop through all elements and remove all handlers on page unload. IE
-  // needs this in order to prevent memory leaks.
-  function purgeListeners() {
-    var element, entry;
-    for (var i in Event.cache) {
-      entry = Event.cache[i];
-      Event.stopObserving(entry.element);
-      entry.element = null;
-    }
+  function destroyCache() {
+    for (var id in cache)
+      for (var eventName in cache[id])
+        cache[id][eventName] = null;
   }
   
-  function onStop() {
-    document.detachEvent("onstop", onStop);
-    purgeListeners();
-  }
   
-  function onBeforeUnload() {
-    if (document.readyState === "interactive") {
-      document.attachEvent("onstop", onStop);
-      (function() { document.detachEvent("onstop", onStop); }).defer();
-    }
-  }
-  
-  if (window.attachEvent && !window.addEventListener) {
-    // Internet Explorer needs to remove event handlers on page unload
-    // in order to avoid memory leaks.
-    window.attachEvent("onunload", purgeListeners);
-
-    // IE also doesn't fire the unload event if the page is navigated away
-    // from before it's done loading. Workaround adapted from
-    // http://blog.moxiecode.com/2008/04/08/unload-event-never-fires-in-ie/.
-    window.attachEvent("onbeforeunload", onBeforeUnload);
+  // Internet Explorer needs to remove event handlers on page unload
+  // in order to avoid memory leaks.
+  if (window.attachEvent) {
+    window.attachEvent("onunload", destroyCache);
   }
   
   // Safari has a dummy event handler on page unload so that it won't
   // use its bfcache. Safari <= 3.1 has an issue with restoring the "document"
   // object when page is returned to via the back button using its bfcache.
-  else if (Prototype.Browser.WebKit) {
-    window.addEventListener("unload", Prototype.emptyFunction, false);
+  if (Prototype.Browser.WebKit) {    
+    window.addEventListener('unload', Prototype.emptyFunction, false);
   }
     
   return {
@@ -266,21 +237,17 @@ Object.extend(Event, (function() {
   
     stopObserving: function(element, eventName, handler) {
       element = $(element);
-      eventName = Object.isString(eventName) ? eventName : null;
-      var id = getEventID(element), c = cache[id];
-
-      if (!c) {
-        return element;
-      }
-      else if (!handler && eventName) {
-        getWrappersForEventName(id, eventName)._each(function(wrapper) {
-          Event.stopObserving(element, eventName, wrapper.handler);
+      var id = getEventID(element), name = getDOMEventName(eventName);
+      
+      if (!handler && eventName) {
+        getWrappersForEventName(id, eventName).each(function(wrapper) {
+          element.stopObserving(eventName, wrapper.handler);
         });
         return element;
-      }
-      else if (!eventName) {
-        Object.keys(c).without("element")._each(function(eventName) {
-          Event.stopObserving(element, eventName);
+        
+      } else if (!eventName) {
+        Object.keys(getCacheForID(id)).each(function(eventName) {
+          element.stopObserving(eventName);
         });
         return element;
       }
@@ -288,13 +255,13 @@ Object.extend(Event, (function() {
       var wrapper = findWrapper(id, eventName, handler);
       if (!wrapper) return element;
       
-      var name = getDOMEventName(eventName);
       if (element.removeEventListener) {
         element.removeEventListener(name, wrapper, false);
       } else {
-        element.detachEvent("on" + name, wrapper); 
+        element.detachEvent("on" + name, wrapper);
       }
-      destroyWrapper(id, eventName, handler); 
+      
+      destroyWrapper(id, eventName, handler);
       
       return element;
     },
@@ -344,74 +311,38 @@ Object.extend(document, {
 
 (function() {
   /* Support for the DOMContentLoaded event is based on work by Dan Webb, 
-     Matthias Miller, Dean Edwards, John Resig and Diego Perini. */
+     Matthias Miller, Dean Edwards and John Resig. */
 
   var timer;
   
   function fireContentLoadedEvent() {
     if (document.loaded) return;
     if (timer) window.clearInterval(timer);
-    document.loaded = true;
     document.fire("dom:loaded");
+    document.loaded = true;
   }
-
-  function isCssLoaded() {
-    return true;
-  }
-
+  
   if (document.addEventListener) {
-    document.addEventListener("DOMContentLoaded", fireContentLoadedEvent, false);
-
-    if (Prototype.Browser.Opera) {
-      isCssLoaded = function() {
-         var sheets = document.styleSheets, length = sheets.length;
-         while (length--) if (sheets[length].disabled) return false;
-         return true;
-      };
-      // Force check to end when window loads
-      Event.observe(window, "load", function() { isCssLoaded = function() { return true } });
+    if (Prototype.Browser.WebKit) {
+      timer = window.setInterval(function() {
+        if (/loaded|complete/.test(document.readyState))
+          fireContentLoadedEvent();
+      }, 0);
+      
+      Event.observe(window, "load", fireContentLoadedEvent);
+      
+    } else {
+      document.addEventListener("DOMContentLoaded", 
+        fireContentLoadedEvent, false);
     }
-    else if (Prototype.Browser.WebKit) {
-      isCssLoaded = function() {
-        var length = document.getElementsByTagName('style').length,
-        links = document.getElementsByTagName('link');
-        for (var i=0, link; link = links[i]; i++)
-          if(link.getAttribute('rel') == "stylesheet") length++;
-        return document.styleSheets.length >= length;
-      };
-    }
-    document.addEventListener("DOMContentLoaded", function() {
-      // Ensure all stylesheets are loaded, solves Opera/Safari issue
-      if (!isCssLoaded()) return arguments.callee.defer();
-      fireContentLoadedEvent();
-    }, false);
     
   } else {
-    document.attachEvent("onreadystatechange", function() {
-      if (document.readyState == "complete") {
-        document.detachEvent("onreadystatechange", arguments.callee);
+    document.write("<script id=__onDOMContentLoaded defer src=//:><\/script>");
+    $("__onDOMContentLoaded").onreadystatechange = function() { 
+      if (this.readyState == "complete") {
+        this.onreadystatechange = null; 
         fireContentLoadedEvent();
       }
-    });
-    
-    if (window == top) {
-      timer = setInterval(function() {
-        try {
-          document.documentElement.doScroll("left");
-        } catch(e) { return }
-        fireContentLoadedEvent();
-      }, 10);
-    }
+    }; 
   }
-  
-  // Safari <3.1 doesn't support DOMContentLoaded
-  if (Prototype.Browser.WebKit && (navigator.userAgent.match(/AppleWebKit\/(\d+)/)[1] < 525)) {
-    timer = setInterval(function() {
-      if (/loaded|complete/.test(document.readyState) && isCssLoaded())
-        fireContentLoadedEvent();
-    }, 10);
-  }
-  
-  // Worst case fallback... 
-  Event.observe(window, "load", fireContentLoadedEvent);
 })();

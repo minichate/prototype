@@ -5,11 +5,9 @@ var Form = {
   },
   
   serializeElements: function(elements, options) {
-    if (typeof options !== 'object') options = { hash: !!options };
+    if (typeof options != 'object') options = { hash: !!options };
     else if (Object.isUndefined(options.hash)) options.hash = true;
-    
-    var key, value, type, isImageType, isSubmitButton, submitSerialized;
-    var submit = options.submit;
+    var key, value, submitted = false, submit = options.submit;
     
     var data = elements.inject({ }, function(result, element) {
       if (!element.disabled && element.name) {
@@ -23,14 +21,7 @@ var Form = {
           }
           else result[key] = value;
         }
-      } else if (!key) return result;
-      
-      if (key in result) {
-        // a key is already present; construct an array of values
-        if (!Object.isArray(result[key])) result[key] = [result[key]];
-        result[key].push(value);
-      } else result[key] = value;
-      
+      }
       return result;
     });
     
@@ -90,7 +81,7 @@ Form.Methods = {
     }).sortBy(function(element) { return element.tabIndex }).first();
     
     return firstByIndex ? firstByIndex : elements.find(function(element) {
-      return ['button', 'input', 'select', 'textarea'].include(element.tagName.toLowerCase());
+      return ['input', 'select', 'textarea'].include(element.tagName.toLowerCase());
     });
   },
 
@@ -105,10 +96,7 @@ Form.Methods = {
 
     var params = options.parameters, action = form.readAttribute('action') || '';
     if (action.blank()) action = window.location.href;
-
-    var submit = options.submit;
-    delete options.submit;
-    options.parameters = form.serialize({ submit:submit, hash:true });
+    options.parameters = form.serialize(true);
     
     if (params) {
       if (Object.isString(params)) params = params.toQueryParams();
@@ -151,15 +139,15 @@ Form.Element.Methods = {
   },
   
   getValue: function(element) {
-    if (!(element = $(element))) return null;
-    var method = element.tagName.toLowerCase(), s = Form.Element.Serializers;
-    return s[method]? s[method](element) : null;
+    element = $(element);
+    var method = element.tagName.toLowerCase();
+    return Form.Element.Serializers[method](element);
   },
 
   setValue: function(element, value) {
-    if (!(element = $(element))) return null;
-    var method = element.tagName.toLowerCase(), s = Form.Element.Serializers;
-    if (s[method]) s[method](element, value);
+    element = $(element);
+    var method = element.tagName.toLowerCase();
+    Form.Element.Serializers[method](element, value);
     return element;
   },
 
@@ -177,7 +165,7 @@ Form.Element.Methods = {
     try {
       element.focus();
       if (element.select && (element.tagName.toLowerCase() != 'input' ||
-          !['button', 'image', 'reset', 'submit'].include(element.type)))
+          !['button', 'reset', 'submit'].include(element.type)))
         element.select();
     } catch (e) { }
     return element;
@@ -217,11 +205,6 @@ Form.Element.Serializers = {
   inputSelector: function(element, value) {
     if (Object.isUndefined(value)) return element.checked ? element.value : null;
     else element.checked = !!value;
-  },
-
-  button: function(element, value){
-    if (Object.isUndefined(value)) return element.innerHTML;
-    else element.innerHTML = value;
   },
 
   textarea: function(element, value) {

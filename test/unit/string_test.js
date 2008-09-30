@@ -205,14 +205,6 @@ new Test.Unit.Runner({
       ('foo <script>boo();<'+'/script><script type="text/javascript">boo();\nmoo();<'+'/script>bar').extractScripts());
     this.assertEnumEqual(['boo();','boo();\nmoo();'], 
       ('foo <script>boo();<'+'/script>blub\nblub<script type="text/javascript">boo();\nmoo();<'+'/script>bar').extractScripts());
-    
-    var russianChars = '//ÐºÐŸÐŒÐµÐœÑÐ°ÑÐžÐ¹\n';
-    var longComment  = '//' + Array(7000).join('.') + '\n';
-    var longScript   = '\nvar foo = 1;\n' + russianChars + longComment;
-    var longString   = '<script type="text/javascript">'+ longScript + '<'+'/script>';
-    this.assertEnumEqual([longScript], longString.extractScripts());
-    
-    this.assertEnumEqual([], ('<!--\n<script>boo();<'+'/script>\n-->').extractScripts());
   },
   
   testEvalScripts: function() {
@@ -235,7 +227,7 @@ new Test.Unit.Runner({
     this.assertEqual('ウィメンズ2007\nクルーズコレクション', 
       'ウィメンズ2007\nクルーズコレクション'.escapeHTML());
       
-    this.assertEqual('a&lt;a href=&quot;blah&quot;&gt;blub&lt;/a&gt;b&lt;span&gt;&lt;div&gt;&lt;/div&gt;&lt;/span&gt;cdef&lt;strong&gt;!!!!&lt;/strong&gt;g',
+    this.assertEqual('a&lt;a href="blah"&gt;blub&lt;/a&gt;b&lt;span&gt;&lt;div&gt;&lt;/div&gt;&lt;/span&gt;cdef&lt;strong&gt;!!!!&lt;/strong&gt;g',
       'a<a href="blah">blub</a>b<span><div></div></span>cdef<strong>!!!!</strong>g'.escapeHTML());
     
     this.assertEqual(largeTextEscaped, largeTextUnescaped.escapeHTML());
@@ -255,12 +247,8 @@ new Test.Unit.Runner({
     
     this.assertEqual(largeTextUnescaped, largeTextEscaped.unescapeHTML());
     
-    this.assertEqual('test \xfa', 'test &uacute;'.unescapeHTML());
     this.assertEqual('1\n2', '1\n2'.unescapeHTML());
     this.assertEqual('Pride & Prejudice', '<h1>Pride &amp; Prejudice</h1>'.unescapeHTML());
-    
-    var escapedTest = '"&lt;" means "<" in HTML';
-    this.assertEqual(escapedTest, escapedTest.escapeHTML().unescapeHTML());
     
     this.benchmark(function() { largeTextEscaped.unescapeHTML() }, 1000);
     

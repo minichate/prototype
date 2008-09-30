@@ -101,7 +101,7 @@ var Enumerable = {
   inGroupsOf: function(number, fillWith) {
     fillWith = Object.isUndefined(fillWith) ? null : fillWith;
     return this.eachSlice(number, function(slice) {
-      while (slice.length < number) slice.push(fillWith);
+      while(slice.length < number) slice.push(fillWith);
       return slice;
     });
   },
@@ -154,7 +154,7 @@ var Enumerable = {
   
   pluck: function(property) {
     var results = [];
-    this._each(function(value) {
+    this.each(function(value) {
       results.push(value[property]);
     });
     return results;

@@ -22,12 +22,6 @@ var Selector = Class.create({
     if (!Prototype.BrowserFeatures.XPath) return false;
     
     var e = this.expression;
-    
-    // Opera's XPath engine breaks down when selectors are too complex
-    // (a regression in version 9.5)
-    if (Prototype.Browser.Opera &&
-     parseFloat(window.opera.version()) === 9.5)
-      return false;
 
     // Safari 3 chokes on :*-of-type and :empty
     if (Prototype.Browser.WebKit && 
@@ -38,7 +32,7 @@ var Selector = Class.create({
     // the "checked" property from DOM nodes
     if ((/(\[[\w-]*?:|:checked)/).test(e))
       return false;
-      
+
     return true;
   },
   
@@ -466,21 +460,8 @@ Object.extend(Selector, {
     
     id: function(nodes, root, id, combinator) {
       var targetNode = $(id), h = Selector.handlers;
-      if (!targetNode) {
-        var needsToSearch = root === document || root.sourceIndex < 1 ||
-          !Element.descendantOf(root, document.documentElement);
-        
-        if (needsToSearch) {
-          var nodes = root.getElementsByTagName('*');
-          for (var i = 0, node; node = nodes[i]; i++) {
-            if (node.id === id) {
-              targetNode = node; break;
-            }
-          } if (!targetNode) return [];
-        } else return [];
-      }
-
-      if (!nodes && root === document) return [targetNode];
+      if (!targetNode) return [];
+      if (!nodes && root == document) return [targetNode];
       if (nodes) {
         if (combinator) {
           if (combinator == 'child') {
@@ -678,6 +659,8 @@ Object.extend(Selector, {
     '^=': function(nv, v) { return nv == v || nv && nv.startsWith(v); },
     '$=': function(nv, v) { return nv == v || nv && nv.endsWith(v); },
     '*=': function(nv, v) { return nv == v || nv && nv.include(v); },
+    '$=': function(nv, v) { return nv.endsWith(v); },
+    '*=': function(nv, v) { return nv.include(v); },
     '~=': function(nv, v) { return (' ' + nv + ' ').include(' ' + v + ' '); },
     '|=': function(nv, v) { return ('-' + (nv || "").toUpperCase() +
      '-').include('-' + (v || "").toUpperCase() + '-'); }

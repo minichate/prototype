@@ -63,18 +63,13 @@ Object.extend(String.prototype, {
     return this.replace(new RegExp(Prototype.ScriptFragment, 'img'), '');
   },
   
-  extractScripts: (function() {
-    var matchAll = new RegExp(Prototype.ScriptFragment, 'ig');
-    var matchOne = new RegExp(Prototype.ScriptFragment, 'i');
-    var matchComments = new RegExp('<!--\\s*' + Prototype.ScriptFragment + '\\s*-->', 'i');
-    
-    return function() {
-      if (this.indexOf('<script') == -1) return [];
-      return (this.replace(matchComments, '').match(matchAll) || []).map(function(scriptTag) {
-        return (scriptTag.match(matchOne) || ['', ''])[1];
-      });
-    }
-  })(),
+  extractScripts: function() {
+    var matchAll = new RegExp(Prototype.ScriptFragment, 'img');
+    var matchOne = new RegExp(Prototype.ScriptFragment, 'im');
+    return (this.match(matchAll) || []).map(function(scriptTag) {
+      return (scriptTag.match(matchOne) || ['', ''])[1];
+    });
+  },
   
   evalScripts: function() {
     return this.extractScripts().map(function(script) { return eval(script) });
@@ -83,16 +78,14 @@ Object.extend(String.prototype, {
   escapeHTML: function() {
     var self = arguments.callee;
     self.text.data = this;
-    return self.container.innerHTML.replace(/"/g, '&quot;');
+    return self.div.innerHTML;
   },
 
   unescapeHTML: function() {
-    var div = document.createElement('div');
-    // Safari requires the text nested inside another element to render correctly
-    div.innerHTML = '<pre>' + this.stripTags() + '</pre>';
-    div = div.firstChild;
+    var div = new Element('div');
+    div.innerHTML = this.stripTags();
     return div.childNodes[0] ? (div.childNodes.length > 1 ? 
-      $A(div.childNodes).inject('', function(memo, node) { return memo + node.nodeValue }) : 
+      $A(div.childNodes).inject('', function(memo, node) { return memo+node.nodeValue }) : 
       div.childNodes[0].nodeValue) : '';
   },
   
@@ -213,6 +206,15 @@ Object.extend(String.prototype, {
   }
 });
 
+if (Prototype.Browser.WebKit || Prototype.Browser.IE) Object.extend(String.prototype, {
+  escapeHTML: function() {
+    return this.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  },
+  unescapeHTML: function() {
+    return this.stripTags().replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
+  }
+});
+
 String.prototype.gsub.prepareReplacement = function(replacement) {
   if (Object.isFunction(replacement)) return replacement;
   var template = new Template(replacement);
@@ -222,42 +224,11 @@ String.prototype.gsub.prepareReplacement = function(replacement) {
 String.prototype.parseQuery = String.prototype.toQueryParams;
 
 Object.extend(String.prototype.escapeHTML, {
-  container: document.createElement('pre'),
+  div:  document.createElement('div'),
   text: document.createTextNode('')
 });
 
-String.prototype.escapeHTML.container.appendChild(
-  String.prototype.escapeHTML.text);
-
-if ('1\n2'.unescapeHTML() === '1\r2') {
-  // IE converts all newlines to carriage returns so we swap them back
-  String.prototype.unescapeHTML = String.prototype.unescapeHTML.wrap(function(proceed) {
-    return proceed().replace(/\r/g, '\n')
-  });
-}
-
-if ('>'.escapeHTML() !== '&gt;') {
-  // Safari 3.x has issues with escaping the ">" character
-  (function() {
-    var escapeHTML = String.prototype.escapeHTML;
-    Object.extend(
-      String.prototype.escapeHTML = escapeHTML.wrap(function(proceed) {
-        return proceed().replace(/>/g, "&gt;")
-      }), {
-      container: escapeHTML.container,
-      text: escapeHTML.text
-    })
-  })();
-}
-  
-if ('&'.escapeHTML() !== '&amp;') {
-  // Safari 2.x has issues with escaping html inside a "pre" element so we use the deprecated "xmp" element instead
-  Object.extend(String.prototype.escapeHTML, {
-    container: document.createElement('xmp'),
-    text: document.createTextNode('')
-  });
-  String.prototype.escapeHTML.container.appendChild(String.prototype.escapeHTML.text);
-}
+String.prototype.escapeHTML.div.appendChild(String.prototype.escapeHTML.text);
 
 var Template = Class.create({
   initialize: function(template, pattern) {

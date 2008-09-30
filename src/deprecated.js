@@ -51,42 +51,38 @@ var Position = {
   within: function(element, x, y) {
     if (this.includeScrollOffsets)
       return this.withinIncludingScrolloffsets(element, x, y);
-      
-    var dimensions = Element.getDimensions(element);
     this.xcomp = x;
     this.ycomp = y;
     this.offset = Element.cumulativeOffset(element);
-    
+
     return (y >= this.offset[1] &&
-            y <  this.offset[1] + dimensions.height &&
+            y <  this.offset[1] + element.offsetHeight &&
             x >= this.offset[0] && 
-            x <  this.offset[0] + dimensions.width);
+            x <  this.offset[0] + element.offsetWidth);
   },
 
   withinIncludingScrolloffsets: function(element, x, y) {
-    var offsetcache = Element.cumulativeScrollOffset(element),
-    dimensions = Element.getDimensions(element);
+    var offsetcache = Element.cumulativeScrollOffset(element);
 
     this.xcomp = x + offsetcache[0] - this.deltaX;
     this.ycomp = y + offsetcache[1] - this.deltaY;
     this.offset = Element.cumulativeOffset(element);
 
     return (this.ycomp >= this.offset[1] &&
-            this.ycomp <  this.offset[1] + dimensions.height &&
+            this.ycomp <  this.offset[1] + element.offsetHeight &&
             this.xcomp >= this.offset[0] && 
-            this.xcomp <  this.offset[0] + dimensions.width);
+            this.xcomp <  this.offset[0] + element.offsetWidth);
   },
 
   // within must be called directly before
-  overlap: function(mode, element) {
-    var dimensions = Element.getDimensions(element);
+  overlap: function(mode, element) {  
     if (!mode) return 0;  
     if (mode == 'vertical') 
-      return ((this.offset[1] + dimensions.height) - this.ycomp) / 
-        dimensions.height;
+      return ((this.offset[1] + element.offsetHeight) - this.ycomp) / 
+        element.offsetHeight;
     if (mode == 'horizontal')
-      return ((this.offset[0] + dimensions.width) - this.xcomp) / 
-        dimensions.width;
+      return ((this.offset[0] + element.offsetWidth) - this.xcomp) / 
+        element.offsetWidth;
   },
 
   // Deprecation layer -- use newer Element methods now (1.5.2).

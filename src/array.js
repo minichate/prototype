@@ -82,13 +82,10 @@ Object.extend(Array.prototype, {
     });
   },
   
-  intersect: function(array) {
-    var length = array.length, i;
-    return this.uniq().findAll(function(item) {
-      i = length;
-      while (i--) if (item === array[i]) return true;
-      return false;
-    });
+  intersect: function(array) { 
+    return this.uniq().findAll(function(item) { 
+      return array.detect(function(value) { return item === value });
+    }); 
   },
   
   clone: function() {
@@ -105,7 +102,7 @@ Object.extend(Array.prototype, {
   
   toJSON: function() {
     var results = [];
-    this._each(function(object) {
+    this.each(function(object) {
       var value = Object.toJSON(object);
       if (!Object.isUndefined(value)) results.push(value);
     });

@@ -28,7 +28,7 @@ new Test.Unit.Runner({
         'document.body.offsetHeight', 'document.body.offsetWidth',
         'document.body.offsetTop', 'document.body.offsetLeft'
       ].inject([], function(properties, prop) {
-        if (!self.screen && prop.include('self.screen')) return;
+        if(!self.screen && prop.include('self.screen')) return;
         if (!document.body && prop.include('document.body')) return;
         properties.push(prop);
         if (prop.include('.body') && document.documentElement)
@@ -370,9 +370,8 @@ new Test.Unit.Runner({
   },
   
   testElementReplace: function() {
-    var replace1 = $('testdiv-replace-1').replace('hello from div!');
+    $('testdiv-replace-1').replace('hello from div!');
     this.assertEqual('hello from div!', $('testdiv-replace-container-1').innerHTML);
-    this.assertEqual('original text', replace1.innerHTML);
     
     $('testdiv-replace-2').replace(123);
     this.assertEqual('123', $('testdiv-replace-container-2').innerHTML);
@@ -648,19 +647,6 @@ new Test.Unit.Runner({
       this.assertEqual(textnode, Element.extend(textnode));
       this.assert(typeof textnode['show'] == 'undefined');
     }, this);
-    
-    // Don't extend XML documents
-    var xmlDoc, text = "<note><to>Sam</to></note>";
-    try {
-      (xmlDoc = new ActiveXObject("Microsoft.XMLDOM")).async = "false";
-      xmlDoc.loadXML(text);
-    } catch(e) {
-      try {
-         xmlDoc = (new DOMParser()).parseFromString(text, "text/xml");
-      } catch(e) { }
-    }
-    Element.extend(xmlDoc.firstChild);
-    this.assertUndefined(xmlDoc.firstChild._extendedByPrototype);
   },
   
   testElementExtendReextendsDiscardedNodes: function() {
@@ -882,7 +868,7 @@ new Test.Unit.Runner({
     $('op3').setStyle({opacity: 0});
     this.assertEqual(0, $('op3').getStyle('opacity'));
     
-    if (navigator.appVersion.match(/MSIE/)) {
+    if(navigator.appVersion.match(/MSIE/)) {
       this.assertEqual('alpha(opacity=30)', $('op1').getStyle('filter'));
       this.assertEqual('progid:DXImageTransform.Microsoft.Blur(strength=10)alpha(opacity=30)', $('op2').getStyle('filter'));
       $('op2').setStyle({opacity:''});
@@ -900,7 +886,7 @@ new Test.Unit.Runner({
     // margin, padding, or borders
     // TODO: This test fails on IE because there seems to be no way
     // to calculate this properly (clientWidth/Height returns 0)
-    if (!navigator.appVersion.match(/MSIE/)) {
+    if(!navigator.appVersion.match(/MSIE/)) {
       this.assertEqual("14px", $('style_test_dimensions').getStyle('width'));
       this.assertEqual("17px", $('style_test_dimensions').getStyle('height'));
     }
@@ -915,12 +901,6 @@ new Test.Unit.Runner({
   },
   
   testElementReadAttribute: function() {
-    var attribFormIssues = $('attributes_with_issues_form');
- 	this.assertEqual('blah-class', attribFormIssues.readAttribute('class'));
- 	this.assertEqual('post', attribFormIssues.readAttribute('method'));
- 	this.assertEqual('string', typeof(attribFormIssues.readAttribute('action')));
- 	this.assertEqual('string', typeof(attribFormIssues.readAttribute('id')));
-    
     this.assertEqual('test.html' , $('attributes_with_issues_1').readAttribute('href'));
     this.assertEqual('L' , $('attributes_with_issues_1').readAttribute('accesskey'));
     this.assertEqual('50' , $('attributes_with_issues_1').readAttribute('tabindex'));
@@ -953,17 +933,6 @@ new Test.Unit.Runner({
     var table = $('write_attribute_table');
     this.assertEqual('4', table.readAttribute('cellspacing'));
     this.assertEqual('6', table.readAttribute('cellpadding'));
-    
-    // test for consistent flag value across browsers
-    ["true", true, " ", 'rEadOnLy'].each(function(value) {
-      $('attributes_with_issues_readonly').writeAttribute('readonly', value);
-      this.assertEqual('readonly', $('attributes_with_issues_readonly').readAttribute('readonly'));
-    }, this);
-    
-    // test IE issue with readAttribute and invalid 'type' attribute of iframes
-    this.assertNull($('dummy_iframe').readAttribute('type'));
-    $('dummy_iframe').writeAttribute('type', 'foo');
-    this.assertIdentical('foo', $('dummy_iframe').readAttribute('type'));
   },
   
   testElementWriteAttribute: function() {
@@ -1102,18 +1071,6 @@ new Test.Unit.Runner({
       Element.prototype.fooBar = Prototype.emptyFunction
       this.assertRespondsTo('fooBar', new Element('div'));
     }
-    
-    // test IE setting "type" property of newly created button element
-    var button = new Element('button', {id:'button_type_test',type: 'reset'}); 
- 	var form   = $('attributes_with_issues_form');   
- 	var input  = $('attributes_with_issues_regular');    
- 	
- 	form.insert(button); 
- 	input.value = 1; 
- 	button.click();
- 	
- 	this.assertEqual('0', input.value);
- 	button.remove();
   },
 
   testElementGetHeight: function() {
@@ -1159,24 +1116,7 @@ new Test.Unit.Runner({
     this.assertIdentical(100, $('dimensions-table').getDimensions().height);
     this.assertIdentical(200, $('dimensions-table').getDimensions().width);
   },
-  
-  testElementClonePosition: function() {
-    var target = $('clonePositionTarget'),
-     source = $('clonePositionSource');
-    
-    window.scrollTo(0, 0);
-    target.clonePosition(source, {  
-      offsetTop: 20,
-      offsetLeft: 30
-    });
-    this.assertIdentical(source.cumulativeOffset().top  + 20, target.cumulativeOffset().top);
-    this.assertIdentical(source.cumulativeOffset().left + 30, target.cumulativeOffset().left);
-        
-    target.clonePosition(source);
-    this.assertIdentical(source.getHeight(), target.getHeight());
-    this.assertIdentical(source.getWidth(), target.getWidth());
-  },
-  
+      
   testDOMAttributesHavePrecedenceOverExtendedElementMethods: function() {
     this.assertNothingRaised(function() { $('dom_attribute_precedence').down('form') });
     this.assertEqual($('dom_attribute_precedence').down('input'), $('dom_attribute_precedence').down('form').update);
@@ -1235,8 +1175,12 @@ new Test.Unit.Runner({
   
   testElementScrollTo: function() {
     var elem = $('scroll_test_2');
+    Element.scrollTo('scroll_test_2');
+    this.assertEqual(Position.page(elem)[1], 0);
+    window.scrollTo(0, 0);
+    
     elem.scrollTo();
-    this.assertEqual(elem.viewportOffset()[1], 0);
+    this.assertEqual(Position.page(elem)[1], 0);      
     window.scrollTo(0, 0);
   },
   
@@ -1317,7 +1261,6 @@ new Test.Unit.Runner({
   },
   
   testViewportOffset: function() {
-    window.scrollTo(0, 0);
     this.assertEnumEqual([10,10],
       $('body_absolute').viewportOffset());
     this.assertEnumEqual([20,20],
@@ -1330,14 +1273,6 @@ new Test.Unit.Runner({
     this.assertEnumEqual([0,0], offset);
     this.assertIdentical(0, offset.top);
     this.assertIdentical(0, offset.left);
-    
-    var offset = $('absolute_fixed').viewportOffset();
-    this.assertEnumEqual([offset.left,offset.top], $('absolute_fixed').viewportOffset());  
-    window.scrollTo(0,30);
-    this.assertEnumEqual([offset.left,offset.top], $('absolute_fixed').viewportOffset());  
-    window.scrollTo(0,80);
-    this.assertEnumEqual([offset.left,offset.top], $('absolute_fixed').viewportOffset());  
-    window.scrollTo(0,0);
   },
   
   testOffsetParent: function() {
@@ -1346,12 +1281,7 @@ new Test.Unit.Runner({
     this.assertEqual('absolute_relative', $('inline').getOffsetParent().id);
     this.assertEqual('absolute_relative', $('absolute_relative_undefined').getOffsetParent().id);
     
-    this.assertEqual(document.body, $(document.documentElement).getOffsetParent());
     this.assertEqual(document.body, new Element('div').getOffsetParent());
-    
-    /* IE with strict doctype may try to return documentElement as offsetParent on relatively positioned elements */  
-    $(document.body).insert( new Element('div', {id:'ie_offset_parent_bug'}).setStyle('position:relative'));  
-    this.assertEqual('BODY', $('ie_offset_parent_bug').getOffsetParent().tagName.toUpperCase());  
   },
 
   testAbsolutize: function() {
@@ -1360,54 +1290,15 @@ new Test.Unit.Runner({
       elt.absolutize();
       this.assertUndefined(elt._originalLeft, 'absolutize() did not detect absolute positioning');
     }, this);
-    
     // invoking on "absolute" positioned element should return element 
     var element = $('absolute_fixed_undefined').setStyle({position: 'absolute'});
     this.assertEqual(element, element.absolutize());
-    element.style.position = '';
-    
-    // test relatively positioned element with no height specified for IE7
-    var element = $('absolute_relative'),
-    dimensions = element.getDimensions();
-    
-    element.absolutize();
-    this.assertIdentical(dimensions.width, element.getDimensions().width);
-    this.assertIdentical(dimensions.height, element.getDimensions().height);
-    element.relativize();
   },
   
   testRelativize: function() {
     // invoking on "relative" positioned element should return element
     var element = $('absolute_fixed_undefined').setStyle({position: 'relative'});
     this.assertEqual(element, element.relativize());
-    element.style.position = '';
-    
-    // test relativize on elements that have not called absolutize first
-    var absoluteElements = $w('notInlineAbsoluted inlineAbsoluted absolute_absolute');
-    absoluteElements.each(function(id) {
-      var passed = true;
-      try {
-        $(id).relativize();
-      } catch(e) {
-        passed = false;
-      }
-      this.assertEqual(false, passed);
-    }, this);
-  },
-  
-  testAbsolutizeRelativizeNotAffectElementDimensions: function() {
-    $('absolutizeChildren').childElements().each(function(element) {
-      var original = element.getDimensions();
-      element.absolutize();
-      var absolute = element.getDimensions();
-      element.relativize();
-      var relative = element.getDimensions();
-      
-      this.assert(original.width == absolute.width && absolute.width == relative.width,
-        element.tagName + ' ' + element.className);
-      this.assert(original.height == absolute.height && absolute.height == relative.height,
-        element.tagName + ' ' + element.className);
-    }, this);
   },
   
   testViewportDimensions: function() {
